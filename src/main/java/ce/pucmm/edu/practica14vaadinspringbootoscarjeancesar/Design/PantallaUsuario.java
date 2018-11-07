@@ -17,16 +17,14 @@ import javax.persistence.PersistenceException;
 @SpringUI(path = "/usuario")
 @Theme("valo")
 public class PantallaUsuario extends UI {
-
     @Autowired
     private UsuarioService usuarioService;
+
+    private Usuario usuario;
 
     private VerticalLayout layout;
     private HorizontalLayout horizontalLayout;
     private FormLayout editarInformacion;
-    private VerticalLayout verticalLayout;
-
-    private Usuario usuario;
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
@@ -50,37 +48,44 @@ public class PantallaUsuario extends UI {
 
         layout = new VerticalLayout();
         horizontalLayout = new HorizontalLayout();
-        layout.setSpacing(true);
+
         layout.setMargin(true);
-        horizontalLayout.setSpacing(true);
-        horizontalLayout.setMargin(true);
+        layout.setSpacing(true);
         layout.setSizeFull();
         layout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
+
+        horizontalLayout.setMargin(true);
+        horizontalLayout.setSpacing(true);
         horizontalLayout.setSizeFull();
         horizontalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
+
         setContent(layout);
     }
 
     private void agregarHeader() {
         HorizontalLayout hzl = new HorizontalLayout();
+        VerticalLayout vtl = new VerticalLayout();
+
+        vtl.setDefaultComponentAlignment(Alignment.TOP_CENTER);
 
         hzl.setSpacing(true);
-        hzl.setMargin(true);
+        hzl.setDefaultComponentAlignment(Alignment.TOP_CENTER);
 
-        Label tituloArriba = new Label("Estás viendo el perfil de: " + usuario.getNombre());
-        tituloArriba.addStyleName(ValoTheme.LABEL_H3);
-        tituloArriba.setSizeUndefined();
+        Label titulo = new Label("Práctica #14 - OCJ");
+        titulo.addStyleName(ValoTheme.LABEL_H1);
+        titulo.setSizeUndefined();
 
-        Button salir = new Button("Salir");
         Button calendario = new Button("Calendario");
-
-        salir.addStyleName(ValoTheme.BUTTON_DANGER);
-        salir.setIcon(FontAwesome.SIGN_OUT);
+        Button salir = new Button("Salir");
 
         calendario.addStyleName(ValoTheme.BUTTON_PRIMARY);
         calendario.setIcon(FontAwesome.CALENDAR);
 
-        hzl.addComponents(tituloArriba, calendario, salir);
+        salir.addStyleName(ValoTheme.BUTTON_DANGER);
+        salir.setIcon(FontAwesome.SIGN_OUT);
+
+        hzl.addComponents(calendario, salir);
+        vtl.addComponents(titulo, hzl);
 
         salir.addClickListener((evento) -> {
             try {
@@ -97,41 +102,43 @@ public class PantallaUsuario extends UI {
             getUI().getPage().setLocation("/");
         });
 
-        calendario.addClickListener((evento) -> {
-            getUI().getPage().setLocation("/calendario");
+        calendario.addClickListener((evento) -> getUI().getPage().setLocation("/calendario"));
 
-        });
-
-        layout.addComponent(hzl);
+        layout.addComponent(vtl);
     }
 
     private void mostrarInformacionUsuario() {
-        verticalLayout = new VerticalLayout();
+        FormLayout fml = new FormLayout();
 
-        Label email = new Label("Correo electrónico: " + usuario.getEmail());
-        email.addStyleName(ValoTheme.LABEL_H4);
+        Label titulo = new Label("Datos del usuario");
+        titulo.addStyleName(ValoTheme.LABEL_H3);
+        titulo.setSizeUndefined();
 
         Label nombre = new Label("Nombre: " + usuario.getNombre());
-        nombre.addStyleName(ValoTheme.LABEL_H4);
+        nombre.addStyleName(ValoTheme.LABEL_SUCCESS);
 
-        verticalLayout.addComponents(email, nombre);
-        horizontalLayout.addComponent(verticalLayout);
+        Label email = new Label("Correo electrónico: " + usuario.getEmail());
+        email.addStyleName(ValoTheme.LABEL_SUCCESS);
+
+        fml.addComponents(titulo, nombre, email);
+
+        horizontalLayout.addComponents(fml);
     }
 
     private void agregarFormularioInformacion() {
         editarInformacion = new FormLayout();
 
-        Label titulo = new Label("Cambia tu información");
+        Label titulo = new Label("Editar datos del usuario");
         titulo.addStyleName(ValoTheme.LABEL_H3);
 
-        TextField nuevoEmail = new TextField("Nuevo email:");
-        TextField nuevoNombre = new TextField("Nuevo nombre:");
-        Button guardar = new Button("Guardar cambios");
+        TextField nuevoEmail = new TextField("Email");
+        TextField nuevoNombre = new TextField("Nombre");
 
+        Button guardar = new Button("Guardar cambios");
         guardar.addStyleName(ValoTheme.BUTTON_PRIMARY);
         guardar.setIcon(FontAwesome.SAVE);
 
-        editarInformacion.addComponents(nuevoNombre, nuevoEmail, guardar);
+        editarInformacion.addComponents(titulo, nuevoNombre, nuevoEmail, guardar);
 
         guardar.addClickListener((evento) -> {
             try {

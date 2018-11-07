@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 @Entity
 public class Usuario implements Serializable {
-
     @Id
     private long id;
 

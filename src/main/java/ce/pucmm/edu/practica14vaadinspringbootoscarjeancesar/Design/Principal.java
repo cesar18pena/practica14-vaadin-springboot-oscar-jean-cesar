@@ -52,31 +52,26 @@ public class Principal extends UI {
         else {
             configurarPagina();
             agregarHeader();
+            formAgregar();
             agregarCalendario();
+
             pantallaEvento = new PantallaEvento();
             pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
-            formAgregar();
         }
     }
 
-    public void configurarPagina() {
+    private void configurarPagina() {
         Page.getCurrent().setTitle("Practica #14 - OCJ");
 
         verticalLayout = new VerticalLayout();
-        verticalLayout.setSpacing(true);
-        verticalLayout.setMargin(true);
         verticalLayout.setSizeFull();
         verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
         setContent(verticalLayout);
-
     }
 
     private void formAgregar() {
-
-        HorizontalLayout layoutAbajo = new HorizontalLayout();
-
-        layoutAbajo.setSpacing(true);
-        layoutAbajo.setMargin(true);
+        HorizontalLayout layoutBotones = new HorizontalLayout();
+        layoutBotones.setSpacing(true);
 
         Button agregar = new Button("Agregar evento");
         Button enviarEmail = new Button("Enviar email");
@@ -100,9 +95,10 @@ public class Principal extends UI {
         } else {
             configuraBotonPantalla(agregar, "Agregar nuevo evento", pantallaEvento);
         }
+
         configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
 
-        layoutAbajo.addComponents(agregar, enviarEmail, verUsuario, salir);
+        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, salir);
 
         salir.addClickListener((evento) -> {
             try {
@@ -123,20 +119,19 @@ public class Principal extends UI {
             getUI().getPage().setLocation("/usuario");
         });
 
-        verticalLayout.addComponent(layoutAbajo);
+        verticalLayout.addComponent(layoutBotones);
 
         agregar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
     }
 
-    public void agregarHeader() {
+    private void agregarHeader() {
         Label header = new Label("Práctica #14 - OCJ");
         header.addStyleName(ValoTheme.LABEL_H1);
         header.setSizeUndefined();
         verticalLayout.addComponent(header);
     }
 
-    public void agregarCalendario() {
-
+    private void agregarCalendario() {
         Button agregar = new Button("Agregar");
         agregar.setIcon(FontAwesome.PLUS);
         agregar.setStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -174,8 +169,9 @@ public class Principal extends UI {
                 eventoService.crearEvento(e.getCaption(), e.getDescription(), e.isAllDay(), e.getStart(), e.getEnd());
             }
         });
-        calendario.setHandler((CalendarComponentEvents.RangeSelectEvent event) -> {
-            pantallaEvento.setDates(event.getStart(), event.getEnd());
+
+        calendario.setHandler((CalendarComponentEvents.RangeSelectEvent evento) -> {
+            pantallaEvento.setDates(evento.getStart(), evento.getEnd());
             abrirPantalla("Agregar nuevo evento", pantallaEvento);
         });
 
@@ -216,4 +212,3 @@ public class Principal extends UI {
         });
     }
 }
-

@@ -29,6 +29,7 @@ public class PantallaEvento extends FormLayout {
 
     Button agregar = new Button("Agregar");
     Button cancelar = new Button("Cancelar");
+    boolean editando = false;
 
     public PantallaEvento(Date startDate, Date endDate) {
         inicio.setValue(startDate);
@@ -46,41 +47,60 @@ public class PantallaEvento extends FormLayout {
         setSizeUndefined();
         setMargin(true);
         setSpacing(true);
+
         inicio.setResolution(Resolution.MINUTE);
         fin.setResolution(Resolution.MINUTE);
         agregar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
+
         agregar.addClickListener((evento) -> {
-                Evento e = new Evento(titulo.getValue(), descripcion.getValue(), false, inicio.getValue(), fin.getValue());
-                try {
-                    SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
-                    eventoService.crearEvento(e.getCaption(), e.getDescription(), false, sdf1.parse(e.getStart().toString()), sdf1.parse(e.getEnd().toString()));
+            Evento e = new Evento(titulo.getValue(), descripcion.getValue(), false, inicio.getValue(), fin.getValue());
 
-                } catch (Exception exp){
+            try {
+                SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
-                }
-                Principal.calendario.addEvent(e);
+                eventoService.crearEvento(
+                        e.getCaption(),
+                        e.getDescription(),
+                        false,
+                        sdf1.parse(e.getStart().toString()),
+                        sdf1.parse(e.getEnd().toString())
+                );
 
-                ((Window)getParent()).close();
+            } catch (Exception exp) {
+
+            }
+
+            Principal.calendario.addEvent(e);
+
+            ((Window) getParent()).close();
         });
 
         cancelar.addClickListener(e -> {
-                ((Window)getParent()).close();
+            ((Window) getParent()).close();
         });
 
         HorizontalLayout buttons = new HorizontalLayout(agregar, cancelar);
         buttons.setSpacing(true);
 
         inicio.setCaption("Inicio:");
+
         fin.setCaption("Fin:");
         titulo.setCaption("Titulo:");
         descripcion.setCaption("Descripcion:");
 
-        addComponents(titulo, descripcion, inicio, fin, buttons);
+        if (!editando) {
+            addComponents(titulo, descripcion, inicio, fin, buttons);
+        } else {
+            addComponents(titulo, descripcion, buttons);
+        }
     }
 
     public void setDates(Date startDate, Date endDate) {
         inicio.setValue(startDate);
         fin.setValue(endDate);
     }
-}
 
+    public void setEditando(boolean editando) {
+        this.editando = editando;
+    }
+}

@@ -14,7 +14,6 @@ import java.util.List;
 @Entity
 @ApplicationScope
 public class Evento implements Serializable, CalendarEvent, EditableCalendarEvent, CalendarEvent.EventChangeNotifier {
-
     @Id
     @GeneratedValue
     private Long id;

@@ -18,11 +18,12 @@ import javax.persistence.PersistenceException;
 @SpringUI(path = "/")
 @Theme("valo")
 public class PantallaLogin extends UI {
-
     @Autowired
     private UsuarioService usuarioService;
 
+    private HorizontalLayout horizontalLayout = new HorizontalLayout();
     private VerticalLayout verticalLayout = new VerticalLayout();
+    private Button botonAccion = new Button();
 
     @Override
     protected void init(VaadinRequest request) {
@@ -30,46 +31,59 @@ public class PantallaLogin extends UI {
             getUI().getPage().setLocation("/calendario");
         else {
             configurarEstilo();
-            agregarHeader();
             agregarFormulario();
+            agregarHeader();
         }
     }
 
-    public void configurarEstilo() {
+    private void configurarEstilo() {
         Page.getCurrent().setTitle("Login");
 
-        verticalLayout = new VerticalLayout();
-        verticalLayout.setSpacing(true);
-        verticalLayout.setMargin(true);
-        verticalLayout.setSizeFull();
-        verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-        setContent(verticalLayout);
+        horizontalLayout = new HorizontalLayout();
 
+        horizontalLayout.setSpacing(true);
+        horizontalLayout.setMargin(true);
+        horizontalLayout.setSizeFull();
+        horizontalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
+
+        setContent(verticalLayout);
     }
 
     private void agregarFormulario() {
-
         TextField email = new TextField("Email");
-
         PasswordField contrasena = new PasswordField("Contrasena");
-
         TextField nombres = new TextField("Nombre");
 
-        Button botonAccion = usuarioService.listarUsuarios().isEmpty() ? new Button("Registrate !") : new Button("Entra !");
+        botonAccion = usuarioService.listarUsuarios().isEmpty() ? new Button("Registrate !") : new Button("Entra !");
 
         botonAccion.addStyleName(ValoTheme.BUTTON_PRIMARY);
         botonAccion.setIcon(FontAwesome.SIGN_IN);
 
-        if (usuarioService.listarUsuarios().isEmpty())
-            verticalLayout.addComponents(nombres, email, contrasena, botonAccion);
-        else
-            verticalLayout.addComponents(email, contrasena, botonAccion);
+        if (usuarioService.listarUsuarios().isEmpty()) {
+            horizontalLayout.addComponents(nombres, email, contrasena);
+        } else {
+            horizontalLayout.addComponents(email, contrasena);
+        }
 
         botonAccion.addClickListener((evento) -> {
-                if (usuarioService.listarUsuarios().isEmpty()) {
+            if (usuarioService.listarUsuarios().isEmpty()) {
+                try {
+                    usuarioService.crearUsuario(usuarioService.listarUsuarios().size() + 1, nombres.getValue(), email.getValue(), contrasena.getValue());
+                    getUI().getPage().setLocation("/");
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                if (usuarioService.validarUsuario(email.getValue(), contrasena.getValue())) {
                     try {
-                        usuarioService.crearUsuario(usuarioService.listarUsuarios().size() + 1, nombres.getValue(), email.getValue(), contrasena.getValue());
-                        getUI().getPage().setLocation("/");
+                        Usuario usuario = usuarioService.listarUsuarios().get(0);
+                        usuario.setEstaLogueado(true);
+                        usuarioService.editarUsuario(usuario);
+                        getUI().getPage().setLocation("/calendario");
                     } catch (PersistenceException e) {
                         e.printStackTrace();
                     } catch (NullPointerException e) {
@@ -77,31 +91,24 @@ public class PantallaLogin extends UI {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                } else {
-                    if (usuarioService.validarUsuario(email.getValue(), contrasena.getValue())) {
-                        try {
-                            Usuario usuario = usuarioService.listarUsuarios().get(0);
-                            usuario.setEstaLogueado(true);
-                            usuarioService.editarUsuario(usuario);
-                            getUI().getPage().setLocation("/calendario");
-                        } catch (PersistenceException e) {
-                            e.printStackTrace();
-                        } catch (NullPointerException e) {
-                            e.printStackTrace();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    } else
-                        getUI().getPage().setLocation("/");
-                }
+                } else
+                    getUI().getPage().setLocation("/");
+            }
         });
+
         botonAccion.setClickShortcut(ShortcutAction.KeyCode.ENTER);
     }
 
     public void agregarHeader() {
-        Label header = usuarioService.listarUsuarios().isEmpty() ? new Label("Registre una cuenta para entrar !") : new Label("Por favor logueate !");
-        header.addStyleName(ValoTheme.LABEL_H3);
-        header.setSizeUndefined();
-        verticalLayout.addComponent(header);
+        Label titulo = new Label("Práctica #14 - OCJ");
+        titulo.addStyleName(ValoTheme.LABEL_H1);
+        titulo.setSizeUndefined();
+
+        Label subtitulo = usuarioService.listarUsuarios().isEmpty() ? new Label("¡Registre una cuenta para entrar!") : new Label("¡Por favor logueate!");
+        subtitulo.addStyleName(ValoTheme.LABEL_H2);
+        subtitulo.setSizeUndefined();
+
+        verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
+        verticalLayout.addComponents(titulo, subtitulo, horizontalLayout, botonAccion);
     }
 }
