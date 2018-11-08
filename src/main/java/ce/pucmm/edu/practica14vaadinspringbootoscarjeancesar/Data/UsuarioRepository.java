@@ -9,4 +9,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario,  String> {
 
     @Query("select usuario from Usuario usuario where usuario.email = :email and usuario.contrasena = :contrasena")
     Usuario findByEmailAndContrasena(@Param("email") String email, @Param("contrasena") String contrasena);
+
+    @Query("select count(usuario) from Usuario usuario")
+    Long contar();
+
 }

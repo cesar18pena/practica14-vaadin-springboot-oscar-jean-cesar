@@ -15,6 +15,14 @@ public class Usuario implements Serializable {
     private boolean estaLogueado;
 
     public Usuario() {
+
+    }
+
+    public Usuario(long id, String nombre, String email) {
+        this.id = id;
+        this.nombre = nombre;
+        this.email = email;
+        this.contrasena = "1234";
     }
 
     public Usuario(long id, String nombre, String email, String contrasena) {

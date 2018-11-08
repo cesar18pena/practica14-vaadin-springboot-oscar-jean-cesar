@@ -76,6 +76,7 @@ public class Principal extends UI {
         Button agregar = new Button("Agregar evento");
         Button enviarEmail = new Button("Enviar email");
         Button verUsuario = new Button("Información de usuario");
+        Button CRUD = new Button("CRUD de Gerentes");
         Button salir = new Button("Salir");
 
         agregar.addStyleName(ValoTheme.BUTTON_PRIMARY);
@@ -86,6 +87,9 @@ public class Principal extends UI {
 
         verUsuario.addStyleName(ValoTheme.BUTTON_PRIMARY);
         verUsuario.setIcon(FontAwesome.USER);
+
+        CRUD.addStyleName(ValoTheme.BUTTON_FRIENDLY);
+        CRUD.setIcon(FontAwesome.USERS);
 
         salir.addStyleName(ValoTheme.BUTTON_DANGER);
         salir.setIcon(FontAwesome.SIGN_OUT);
@@ -98,7 +102,7 @@ public class Principal extends UI {
 
         configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
 
-        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, salir);
+        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, CRUD ,salir);
 
         salir.addClickListener((evento) -> {
             try {
@@ -117,6 +121,10 @@ public class Principal extends UI {
 
         verUsuario.addClickListener((evento) -> {
             getUI().getPage().setLocation("/usuario");
+        });
+
+        CRUD.addClickListener((evento) -> {
+            getUI().getPage().setLocation("/gerentes");
         });
 
         verticalLayout.addComponent(layoutBotones);

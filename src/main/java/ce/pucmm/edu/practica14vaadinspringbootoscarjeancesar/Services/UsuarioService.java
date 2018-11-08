@@ -4,6 +4,7 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Data.UsuarioReposit
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.PersistenceException;
 import java.util.List;
@@ -45,6 +46,11 @@ public class UsuarioService {
 
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
+    }
+
+    @Transactional
+    public long contarUsuario() {
+        return usuarioRepository.contar()+1;
     }
 }
 
