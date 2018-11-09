@@ -1,14 +1,22 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
+import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
+import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.annotations.Theme;
+import com.vaadin.event.SelectionEvent;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
+import com.vaadin.ui.components.calendar.event.EditableCalendarEvent;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.xml.bind.Binder;
+import java.util.Date;
+import java.util.List;
 
 @SpringUI(path = "/gerentes")
 @Theme("valo")
@@ -20,10 +28,19 @@ public class CRUDGerente extends UI {
     TextField email = new TextField("Email:");
     PasswordField contrasena = new PasswordField("Contraseña:");
 
+    Grid tabla;
+
     Button agregar = new Button("Salvar");
     Button cancelar = new Button("Cancelar");
 
+    boolean editando = false;
+
+    Integer usuarioSeleccionadoID;
+
     private VerticalLayout verticalLayout = new VerticalLayout();
+    private HorizontalLayout paginaEntera = new HorizontalLayout();
+
+    PantallaAccionesGerente pantallaAccionesGerente = new PantallaAccionesGerente();
 
     @Override
     protected void init(VaadinRequest request) {
@@ -48,7 +65,12 @@ public class CRUDGerente extends UI {
 
         agregar.addClickListener((evento) -> {
             try {
-                usuarioService.crearUsuario(usuarioService.contarUsuario(), nombre.getValue(), email.getValue(), contrasena.getValue());
+                if(editando){
+                    usuarioService.crearUsuario(usuarioSeleccionadoID, nombre.getValue(), email.getValue(), contrasena.getValue());
+                }
+                else {
+                    usuarioService.crearUsuario(usuarioService.contarUsuario(), nombre.getValue(), email.getValue(), contrasena.getValue());
+                }
             } catch (Exception exp) {
                 exp.printStackTrace();
             }
@@ -56,6 +78,7 @@ public class CRUDGerente extends UI {
             nombre.setValue("");
             email.setValue("");
             contrasena.setValue("");
+            Page.getCurrent().reload();
         });
 
         cancelar.addClickListener((evento) -> {
@@ -75,10 +98,64 @@ public class CRUDGerente extends UI {
         email.setCaption("Email: ");
         contrasena.setCaption("Contraseña: ");
 
+        List<Usuario> listaDeUsuarios = usuarioService.listarUsuarios();
+
+        tabla = new Grid();
+        tabla.addColumn("Nombre").setHeaderCaption("Nombre");
+        tabla.addColumn("Email").setHeaderCaption("Email");
+
+        for (Usuario usuario : listaDeUsuarios) {
+            tabla.addRow(usuario.getNombre(), usuario.getEmail());
+        }
+        ;
+
+        tabla.addSelectionListener((SelectionEvent.SelectionListener) event -> {
+            if (!event.getSelected().isEmpty()) {
+                abrirPantalla("Elige una opción", pantallaAccionesGerente);
+                pantallaAccionesGerente.eliminar.addClickListener((evento) -> {
+                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
+                    usuarioService.eliminarUsuario(usuarioID);
+                    Page.getCurrent().reload();
+                });
+                pantallaAccionesGerente.modificar.addClickListener((evento) -> {
+                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
+                    Usuario usuario = usuarioService.buscarUsuario(usuarioID);
+                    nombre.setValue(usuario.getNombre());
+                    email.setValue(usuario.getEmail());
+                    contrasena.setValue(usuario.getContrasena());
+                    editando = true;
+                    usuarioSeleccionadoID = usuarioID;
+                });
+            }
+        });
+
+
+        tabla.setHeight("70%");
+
         verticalLayout = new VerticalLayout();
-        verticalLayout.setSizeFull();
         verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
+        verticalLayout.setSpacing(true);
         setContent(verticalLayout);
-        verticalLayout.addComponents(header, nombre, email, contrasena, botoneslayout);
+
+        verticalLayout.addComponents(header, nombre, email, contrasena, botoneslayout, tabla);
+    }
+
+    private void abrirPantalla(String title, FormLayout form) {
+        Window vistaPantalla = new Window(title);
+
+        vistaPantalla.center();
+        vistaPantalla.setResizable(false);
+        vistaPantalla.setModal(true);
+        vistaPantalla.setClosable(true);
+        vistaPantalla.setDraggable(false);
+        vistaPantalla.setContent(form);
+
+        addWindow(vistaPantalla);
+    }
+
+    private void configuraBotonPantalla(Button boton, String titulo, FormLayout formulario) {
+        boton.addClickListener((e) -> {
+            abrirPantalla(titulo, formulario);
+        });
     }
 }

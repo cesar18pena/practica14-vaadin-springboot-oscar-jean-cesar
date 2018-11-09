@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Entity
 public class Usuario implements Serializable {
     @Id
-    private long id;
+    private Integer id;
 
     private String nombre;
     private String email;
@@ -18,14 +18,14 @@ public class Usuario implements Serializable {
 
     }
 
-    public Usuario(long id, String nombre, String email) {
+    public Usuario(Integer id, String nombre, String email) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
         this.contrasena = "1234";
     }
 
-    public Usuario(long id, String nombre, String email, String contrasena) {
+    public Usuario(Integer id, String nombre, String email, String contrasena) {
         this.id = id;
         this.nombre = nombre;
         this.email = email;
@@ -36,7 +36,7 @@ public class Usuario implements Serializable {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

@@ -2,6 +2,7 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services;
 
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Data.UsuarioRepository;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
+import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,14 +11,15 @@ import javax.persistence.PersistenceException;
 import java.util.List;
 
 @Service
+@Transactional
 public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public Usuario crearUsuario(long id, String nombre, String email, String contrasena) throws Exception {
+    public Usuario crearUsuario(Integer id, String nombre, String email, String contrasena) throws Exception {
         try {
-            return usuarioRepository.save(new Usuario(usuarioRepository.findAll().size() + 1, nombre, email, contrasena));
+            return usuarioRepository.save(new Usuario(id, nombre, email, contrasena));
         } catch (PersistenceException exp) {
             throw new PersistenceException("Hubo un error al crear un nuevo usuario.");
         } catch (NullPointerException exp) {
@@ -49,9 +51,20 @@ public class UsuarioService {
     }
 
     @Transactional
-    public long contarUsuario() {
+    public Integer contarUsuario() {
         return usuarioRepository.contar()+1;
     }
+
+    @Transactional
+    public void eliminarUsuario(Integer usuarioID){
+        usuarioRepository.delete(usuarioID);
+    }
+
+    @Transactional
+    public Usuario buscarUsuario(Integer usuarioID){
+        return usuarioRepository.findOne(usuarioID);
+    }
+
 }
 
 
