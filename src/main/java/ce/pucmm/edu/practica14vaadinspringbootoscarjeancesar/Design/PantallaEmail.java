@@ -3,14 +3,16 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 import com.sendgrid.*;
 import com.vaadin.event.ShortcutAction;
 
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 
-public class PantallaEmail extends FormLayout {
+public class PantallaEmail extends VerticalLayout {
 
 //    TextField desde = new TextField("Desde:");
 //    TextField hacia = new TextField("Hacia:");

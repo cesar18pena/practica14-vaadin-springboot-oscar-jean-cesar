@@ -11,6 +11,8 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.icon.Icon;
@@ -19,12 +21,18 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.button.Button;
 import org.vaadin.calendar.CalendarComponent;
+
 import javax.persistence.PersistenceException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
 @Route("calendario")
+@SpringComponent
+@UIScope
 public class Principal extends VerticalLayout {
+    public static CalendarComponent<Evento> calendario = new CalendarComponent<Evento>()
+            .withItemDateGenerator(e -> new Date())
+            .withItemLabelGenerator(e -> e.getCaption());
 
     @Autowired
     public Principal(@Autowired final PantallaEvento pantallaEvento,
@@ -32,15 +40,10 @@ public class Principal extends VerticalLayout {
                      @Autowired EventoService eventoService,
                      @Autowired final PantallaEmail pantallaEmail
     ) {
-
-        VerticalLayout verticalLayout = new VerticalLayout();
-
         if (usuarioService.listarUsuarios().isEmpty()) {
-            getUI().get().getPage().getHistory().pushState(null, "");
-            getUI().get().getPage().reload();
+            getUI().get().navigate("");
         } else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado()) {
-            getUI().get().getPage().getHistory().pushState(null, "");
-            getUI().get().getPage().reload();
+            getUI().get().navigate("");
         } else {
             setAlignItems(Alignment.CENTER);
 
@@ -60,12 +63,12 @@ public class Principal extends VerticalLayout {
             salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
 
             if (!eventoService.listarEventos().isEmpty()) {
-                configuraBotonPantalla(agregar, "Agregar nuevo evento (" + eventoService.listarEventos().size() + ")", pantallaEvento);
+                configuraBotonPantalla(agregar, pantallaEvento);
             } else {
-                configuraBotonPantalla(agregar, "Agregar nuevo evento", pantallaEvento);
+                configuraBotonPantalla(agregar, pantallaEvento);
             }
 
-            configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
+            configuraBotonPantalla(enviarEmail, pantallaEmail);
 
             layoutBotones = new HorizontalLayout(agregar, enviarEmail, verUsuario, CRUD, salir);
 
@@ -74,6 +77,8 @@ public class Principal extends VerticalLayout {
                     Usuario usuario = usuarioService.listarUsuarios().get(0);
                     usuario.setEstaLogueado(false);
                     usuarioService.editarUsuario(usuario);
+
+                    getUI().get().navigate("");
                 } catch (PersistenceException e) {
                     e.printStackTrace();
                 } catch (NullPointerException e) {
@@ -81,27 +86,16 @@ public class Principal extends VerticalLayout {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                getUI().get().getPage().reload();
             });
 
-            verUsuario.addClickListener((evento) -> {
-                getUI().get().getPage().getHistory().pushState(null, "usuario");
-                getUI().get().getPage().reload();
-            });
-
-            CRUD.addClickListener((evento) -> {
-                getUI().get().getPage().getHistory().pushState(null, "gerentes");
-                getUI().get().getPage().reload();
-            });
+            verUsuario.addClickListener((evento) -> getUI().get().navigate("usuario"));
+            CRUD.addClickListener((evento) -> getUI().get().navigate("gerentes"));
 
             eventoService.crearEvento("algo", "alguito", false, ZonedDateTime.now(), ZonedDateTime.now());
             eventoService.crearEvento("algo1", "alguito1", false, ZonedDateTime.now(), ZonedDateTime.now());
             eventoService.crearEvento("algo2", "alguito2", false, ZonedDateTime.now(), ZonedDateTime.now());
             eventoService.crearEvento("algo3", "alguito3", false, ZonedDateTime.now(), ZonedDateTime.now());
 
-            CalendarComponent<Evento> calendario = new CalendarComponent<Evento>()
-                    .withItemDateGenerator(e -> new Date())
-                    .withItemLabelGenerator(e -> e.getCaption());
             calendario.setItems(new Evento("Evento1", "Este es el evento 1", false, ZonedDateTime.now(), ZonedDateTime.now()));
             calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getCaption()));
 
@@ -111,25 +105,23 @@ public class Principal extends VerticalLayout {
             add(header, calSubtitulo, layoutBotones, calendario);
             setAlignItems(Alignment.CENTER);
 
-//            pantallaEvento = new PantallaEvento();
 //            pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
         }
 
         Button agregar = new Button("Agregar");
         agregar.setIcon(new Icon(VaadinIcon.PLUS));
-
     }
 
-    private void abrirPantalla(String title, FormLayout form) {
+    private void abrirPantalla(VerticalLayout form) {
         Dialog vistaPantalla = new Dialog();
-        vistaPantalla.add(new Label(title));
+        vistaPantalla.add(form);
 
         vistaPantalla.open();
     }
 
-    private void configuraBotonPantalla(Button boton, String titulo, FormLayout formulario) {
+    private void configuraBotonPantalla(Button boton, VerticalLayout formulario) {
         boton.addClickListener((e) -> {
-            abrirPantalla(titulo, formulario);
+            abrirPantalla(formulario);
         });
     }
 }

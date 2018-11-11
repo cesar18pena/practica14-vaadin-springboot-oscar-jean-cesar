@@ -59,8 +59,9 @@ public class PantallaLogin extends VerticalLayout {
                         Usuario usuario = usuarioService.listarUsuarios().get(0);
                         usuario.setEstaLogueado(true);
                         usuarioService.editarUsuario(usuario);
-                        getUI().get().getPage().getHistory().pushState(null, "calendario");
-                        getUI().get().getPage().reload();
+                        getUI().get().navigate("calendario");
+//                        getUI().get().getPage().getHistory().pushState(null, "calendario");
+//                        getUI().get().getPage().reload();
                     } catch (PersistenceException e) {
                         e.printStackTrace();
                     } catch (NullPointerException e) {
