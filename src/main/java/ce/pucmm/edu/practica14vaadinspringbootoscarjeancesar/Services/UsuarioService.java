@@ -63,12 +63,12 @@ public class UsuarioService {
 
     @Transactional
     public void eliminarUsuario(Integer usuarioID){
-        usuarioRepository.delete(usuarioID);
+        usuarioRepository.deleteById(usuarioID);
     }
 
     @Transactional
     public Usuario buscarUsuario(Integer usuarioID){
-        return usuarioRepository.findOne(usuarioID);
+        return usuarioRepository.getOne(usuarioID);
     }
 
 }

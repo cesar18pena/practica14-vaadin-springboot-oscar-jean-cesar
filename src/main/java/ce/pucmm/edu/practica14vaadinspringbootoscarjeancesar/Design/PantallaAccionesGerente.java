@@ -1,15 +1,11 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.stereotype.Component;
 
 @Component
-@UIScope
-@SpringUI
 public class PantallaAccionesGerente extends FormLayout {
 
     Button modificar = new Button("Modificar");

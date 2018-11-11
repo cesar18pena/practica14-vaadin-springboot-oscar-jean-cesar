@@ -2,20 +2,18 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.annotations.Theme;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.flow.router.Route;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.PersistenceException;
 
-@SpringUI(path = "/usuario")
-@Theme("valo")
+@Route("usuario")
 public class PantallaUsuario extends UI {
     @Autowired
     private UsuarioService usuarioService;

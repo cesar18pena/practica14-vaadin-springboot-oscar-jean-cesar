@@ -6,17 +6,15 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioSer
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Binder;
 import com.vaadin.data.provider.DataProvider;
+import com.vaadin.flow.router.Route;
 import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
-
-@SpringUI(path = "/gerentes")
+@Route("gerentes")
 @Theme("valo")
 public class CRUDGerente extends UI {
     @Autowired

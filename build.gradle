@@ -1,23 +1,25 @@
 buildscript {
     ext {
-        springBootVersion = '1.5.17.RELEASE'
+        springBootVersion = '2.0.5.BUILD-SNAPSHOT'
     }
     repositories {
         mavenCentral()
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
-plugins {
-    id 'com.devsoap.plugin.vaadin' version '1.4.1'
-    id 'idea'
-}
-
 apply plugin: 'java'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group 'ce.pucmm.edu'
+version '1.0-SNAPSHOT'
+sourceCompatibility = 1.8
 
 jar {
     baseName = 'app'
@@ -28,20 +30,20 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven {
-        url "http://maven.vaadin.com/vaadin-addons"
-    }
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "https://repo.spring.io/milestone" }
+    maven { url "https://oss.sonatype.org/content/repositories/vaadin-snapshots/" }
+    maven { url "http://maven.vaadin.com/vaadin-addons" }
 }
 
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-mail')
-    compile('com.vaadin:vaadin-spring-boot-starter:1.0.2')
+    compile('com.vaadin:vaadin-spring-boot-starter')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.vaadin.addons:numberfield:0.5.1')
-    vaadinCompile('org.vaadin.blackbluegl:calendar-component:2.0-BETA4')
-    compile('com.vaadin:vaadin-server:8.6.0')
-
+    compile('org.vaadin.blackbluegl:calendar-component:2.0-BETA4')
+    compile('org.vaadin.stefan:fullcalendar:1.5.0')
     runtime('com.h2database:h2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     compile 'com.sendgrid:sendgrid-java:3.1.0'
@@ -49,9 +51,8 @@ dependencies {
 
 dependencyManagement {
     imports {
-        mavenBom "com.vaadin:vaadin-bom:8.6.0"
+        mavenBom "com.vaadin:vaadin-bom:10.0.6"
     }
 }
-group 'ce.pucmm.edu'
-version '1.0-SNAPSHOT'
+
 

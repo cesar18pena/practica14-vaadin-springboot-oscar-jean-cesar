@@ -4,15 +4,15 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoService;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.annotations.Theme;
 import com.vaadin.data.provider.DataProvider;
 import com.vaadin.event.ShortcutAction;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.router.Route;
 import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.ui.Window;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.addon.calendar.Calendar;
 import org.vaadin.addon.calendar.handler.BasicItemMoveHandler;
@@ -20,140 +20,122 @@ import org.vaadin.addon.calendar.handler.BasicItemResizeHandler;
 import org.vaadin.addon.calendar.item.EditableCalendarItem;
 import org.vaadin.addon.calendar.ui.CalendarComponentEvents;
 
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.router.Route;
+import org.springframework.beans.factory.annotation.Autowired;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.button.Button;
+import org.vaadin.stefan.fullcalendar.Entry;
+import org.vaadin.stefan.fullcalendar.FullCalendar;
+import org.vaadin.stefan.fullcalendar.FullCalendarBuilder;
+
 import javax.persistence.PersistenceException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 
-@SpringUI(path = "/calendario")
-@Theme("valo")
-public class Principal extends UI {
-    @Autowired
-    private UsuarioService usuarioService;
-    @Autowired
-    public EventoService eventoService;
-
-    @Autowired
-    private PantallaEvento pantallaEvento;
-    private PantallaEmail pantallaEmail;
-
-    private VerticalLayout verticalLayout = new VerticalLayout();
+@Route("calendario")
+public class Principal extends VerticalLayout {
     public static Calendar calendario = new Calendar();
-
     public static DataProvider<Evento, Void> dataProvider;
 
     @Autowired
-    public Principal(PantallaEvento pantallaEvento) {
-        this.pantallaEvento = pantallaEvento;
+    public Principal(@Autowired final PantallaEvento pantallaEvento,
+                     @Autowired UsuarioService usuarioService,
+                     @Autowired EventoService eventoService,
+                     @Autowired final PantallaEmail pantallaEmail
+    ) {
 
-        dataProvider = DataProvider.fromCallbacks(
-                query -> eventoService.listarEventos().stream(),
-                query -> Math.toIntExact(eventoService.listarEventos().size())
-        );
-    }
+       VerticalLayout verticalLayout = new VerticalLayout();
 
-    @Override
-    protected void init(VaadinRequest request) {
-        if (usuarioService.listarUsuarios().isEmpty())
-            getUI().getPage().setLocation("/");
-        else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado())
-            getUI().getPage().setLocation("/");
+        if (usuarioService.listarUsuarios().isEmpty()) {
+            getUI().get().getPage().getHistory().pushState(null, "");
+            getUI().get().getPage().reload();
+        }
+        else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado()) {
+            getUI().get().getPage().getHistory().pushState(null, "");
+            getUI().get().getPage().reload();
+        }
         else {
-            configurarPagina();
-            agregarHeader();
-            formAgregar();
-            agregarCalendario();
+            setAlignItems(Alignment.CENTER);
 
-            pantallaEvento = new PantallaEvento();
-            pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
-        }
-    }
+            HorizontalLayout layoutBotones = new HorizontalLayout();
+            layoutBotones.setSpacing(true);
 
-    private void configurarPagina() {
-        Page.getCurrent().setTitle("Practica #14 - OCJ");
+            Button agregar = new Button("Agregar evento");
+            Button enviarEmail = new Button("Enviar email");
+            Button verUsuario = new Button("Información de usuario");
+            Button CRUD = new Button("CRUD de Gerentes");
+            Button salir = new Button("Salir");
 
-        verticalLayout = new VerticalLayout();
-        verticalLayout.setSizeFull();
-        verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-        setContent(verticalLayout);
-    }
+            agregar.setIcon(new Icon(VaadinIcon.PLUS));
+            enviarEmail.setIcon(new Icon(VaadinIcon.ENVELOPE));
+            verUsuario.setIcon(new Icon(VaadinIcon.USER));
+            CRUD.setIcon(new Icon(VaadinIcon.USERS));
+            salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
 
-    private void formAgregar() {
-        HorizontalLayout layoutBotones = new HorizontalLayout();
-        layoutBotones.setSpacing(true);
-
-        Button agregar = new Button("Agregar evento");
-        Button enviarEmail = new Button("Enviar email");
-        Button verUsuario = new Button("Información de usuario");
-        Button CRUD = new Button("CRUD de Gerentes");
-        Button salir = new Button("Salir");
-
-        agregar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        agregar.setIcon(VaadinIcons.PLUS);
-
-        enviarEmail.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        enviarEmail.setIcon(VaadinIcons.ENVELOPE);
-
-        verUsuario.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        verUsuario.setIcon(VaadinIcons.USER);
-
-        CRUD.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        CRUD.setIcon(VaadinIcons.USERS);
-
-        salir.addStyleName(ValoTheme.BUTTON_DANGER);
-        salir.setIcon(VaadinIcons.SIGN_OUT);
-
-        if (!eventoService.listarEventos().isEmpty()) {
-            configuraBotonPantalla(agregar, "Agregar nuevo evento (" + eventoService.listarEventos().size() + ")", pantallaEvento);
-        } else {
-            configuraBotonPantalla(agregar, "Agregar nuevo evento", pantallaEvento);
-        }
-
-        configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
-
-        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, CRUD, salir);
-
-        salir.addClickListener((evento) -> {
-            try {
-                Usuario usuario = usuarioService.listarUsuarios().get(0);
-                usuario.setEstaLogueado(false);
-                usuarioService.editarUsuario(usuario);
-            } catch (PersistenceException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
+            if (!eventoService.listarEventos().isEmpty()) {
+                configuraBotonPantalla(agregar, "Agregar nuevo evento (" + eventoService.listarEventos().size() + ")", pantallaEvento);
+            } else {
+                configuraBotonPantalla(agregar, "Agregar nuevo evento", pantallaEvento);
             }
-            getUI().getPage().setLocation("/");
-        });
 
-        verUsuario.addClickListener((evento) -> {
-            getUI().getPage().setLocation("/usuario");
-        });
+            configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
 
-        CRUD.addClickListener((evento) -> {
-            getUI().getPage().setLocation("/gerentes");
-        });
+            layoutBotones = new HorizontalLayout(agregar, enviarEmail, verUsuario, CRUD, salir);
 
-        verticalLayout.addComponent(layoutBotones);
+            salir.addClickListener((evento) -> {
+                try {
+                    Usuario usuario = usuarioService.listarUsuarios().get(0);
+                    usuario.setEstaLogueado(false);
+                    usuarioService.editarUsuario(usuario);
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                getUI().get().getPage().reload();
+            });
 
-        agregar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
-    }
+            verUsuario.addClickListener((evento) -> {
+                getUI().get().getPage().getHistory().pushState(null, "usuario");
+                getUI().get().getPage().reload();
+            });
 
-    private void agregarHeader() {
-        Label header = new Label("Práctica #14 - OCJ");
-        header.addStyleName(ValoTheme.LABEL_H1);
-        header.setSizeUndefined();
-        verticalLayout.addComponent(header);
-    }
+            CRUD.addClickListener((evento) -> {
+                getUI().get().getPage().getHistory().pushState(null, "gerentes");
+                getUI().get().getPage().reload();
+            });
 
-    private void agregarCalendario() {
+            FullCalendar calendar = FullCalendarBuilder.create().build();
+//
+//            Entry entry = new Entry();
+//            entry.setTitle("Some event");
+//            entry.setStart(LocalDate.now().withDayOfMonth(3).atTime(10, 0));
+//            entry.setEnd(entry.getStart().plusHours(2));
+//            entry.setColor("#ff3333");
+//
+//            calendar.addEntry(entry);
+
+            Text header = new Text("Práctica #14 - OCJ");
+
+            add(header, layoutBotones, calendar);
+            setFlexGrow(1, calendar);
+
+//            pantallaEvento = new PantallaEvento();
+//            pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
+        }
+
         Button agregar = new Button("Agregar");
-        agregar.setIcon(VaadinIcons.PLUS);
-        agregar.setStyleName(ValoTheme.BUTTON_PRIMARY);
+        agregar.setIcon(new Icon(VaadinIcon.PLUS));
 
 //        calendario.setFirstDayOfWeek(1);
         calendario.setTimeFormat(Calendar.TimeFormat.Format12H);
@@ -204,22 +186,20 @@ public class Principal extends UI {
         calendario.withVisibleHours(6, 20);
         calendario.setSizeFull();
 
-        verticalLayout.addComponent(calendario);
-        verticalLayout.setExpandRatio(calendario, 1.0f);
+//        verticalLayout.addComponent(calendario);
+//        verticalLayout.setExpandRatio(calendario, 1.0f);
 
+        dataProvider = DataProvider.fromCallbacks(
+                query -> eventoService.listarEventos().stream(),
+                query -> Math.toIntExact(eventoService.listarEventos().size())
+        );
     }
 
     private void abrirPantalla(String title, FormLayout form) {
-        Window vistaPantalla = new Window(title);
+        Dialog vistaPantalla = new Dialog();
+        vistaPantalla.add(new Label(title));
 
-        vistaPantalla.center();
-        vistaPantalla.setResizable(false);
-        vistaPantalla.setModal(true);
-        vistaPantalla.setClosable(true);
-        vistaPantalla.setDraggable(false);
-        vistaPantalla.setContent(form);
-
-        addWindow(vistaPantalla);
+        vistaPantalla.open();
     }
 
     private void configuraBotonPantalla(Button boton, String titulo, FormLayout formulario) {
