@@ -1,19 +1,19 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model;
 
-import com.vaadin.ui.components.calendar.event.CalendarEvent;
-import com.vaadin.ui.components.calendar.event.EditableCalendarEvent;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.context.annotation.ApplicationScope;
+import org.vaadin.addon.calendar.item.CalendarItem;
+import org.vaadin.addon.calendar.item.EditableCalendarItem;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
 @ApplicationScope
-public class Evento implements Serializable, CalendarEvent, EditableCalendarEvent, CalendarEvent.EventChangeNotifier {
+public class Evento implements Serializable, CalendarItem, EditableCalendarItem, EditableCalendarItem.ItemChangeNotifier {
     @Id
     @GeneratedValue
     private Long id;
@@ -25,18 +25,21 @@ public class Evento implements Serializable, CalendarEvent, EditableCalendarEven
     private boolean notified;
 
     @DateTimeFormat
-    private Date start;
+    private ZonedDateTime start;
 
     @DateTimeFormat
-    private Date end;
+    private ZonedDateTime end;
 
     @Transient
-    private List<EventChangeListener> listeners = new ArrayList<EventChangeListener>();
+    private List<ItemChangeListener> listeners = new ArrayList<ItemChangeListener>();
+
+    @Transient
+    ItemChangeNotifier notifier;
 
     public Evento() {
     }
 
-    public Evento(String caption, String description, boolean isAllDay, Date start, Date end) {
+    public Evento(String caption, String description, boolean isAllDay, ZonedDateTime start, ZonedDateTime end) {
         this.caption = caption;
         this.description = description;
         this.isAllDay = isAllDay;
@@ -45,12 +48,12 @@ public class Evento implements Serializable, CalendarEvent, EditableCalendarEven
     }
 
     @Override
-    public void addEventChangeListener(EventChangeListener listener) {
+    public void addListener(ItemChangeListener listener) {
         getListeners().add(listener);
     }
 
     @Override
-    public void removeEventChangeListener(EventChangeListener listener) {
+    public void removeListener(ItemChangeListener listener) {
         getListeners().remove(listener);
     }
 
@@ -102,6 +105,11 @@ public class Evento implements Serializable, CalendarEvent, EditableCalendarEven
         isAllDay = allDay;
     }
 
+    @Override
+    public ItemChangeNotifier getNotifier() {
+        return notifier;
+    }
+
     public boolean isNotified() {
         return notified;
     }
@@ -111,30 +119,30 @@ public class Evento implements Serializable, CalendarEvent, EditableCalendarEven
     }
 
     @Override
-    public Date getStart() {
+    public ZonedDateTime getStart() {
         return start;
     }
 
     @Override
-    public void setStart(Date start) {
+    public void setStart(ZonedDateTime start) {
         this.start = start;
     }
 
     @Override
-    public Date getEnd() {
+    public ZonedDateTime getEnd() {
         return end;
     }
 
     @Override
-    public void setEnd(Date end) {
+    public void setEnd(ZonedDateTime end) {
         this.end = end;
     }
 
-    public List<EventChangeListener> getListeners() {
+    public List<ItemChangeListener> getListeners() {
         return listeners;
     }
 
-    public void setListeners(List<EventChangeListener> listeners) {
+    public void setListeners(List<ItemChangeListener> listeners) {
         this.listeners = listeners;
     }
 }

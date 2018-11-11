@@ -4,18 +4,16 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.annotations.Theme;
-import com.vaadin.event.SelectionEvent;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.data.Binder;
+import com.vaadin.data.provider.DataProvider;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
-import com.vaadin.ui.components.calendar.event.EditableCalendarEvent;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.xml.bind.Binder;
-import java.util.Date;
 import java.util.List;
 
 @SpringUI(path = "/gerentes")
@@ -28,7 +26,9 @@ public class CRUDGerente extends UI {
     TextField email = new TextField("Email:");
     PasswordField contrasena = new PasswordField("Contraseña:");
 
-    Grid tabla;
+    DataProvider<Usuario, Void> dataProvider;
+    Binder<Usuario> binder;
+    Grid<Usuario> tabla;
 
     Button agregar = new Button("Salvar");
     Button cancelar = new Button("Cancelar");
@@ -38,9 +38,19 @@ public class CRUDGerente extends UI {
     Integer usuarioSeleccionadoID;
 
     private VerticalLayout verticalLayout = new VerticalLayout();
-    private HorizontalLayout paginaEntera = new HorizontalLayout();
 
     PantallaAccionesGerente pantallaAccionesGerente = new PantallaAccionesGerente();
+
+    public CRUDGerente() {
+        dataProvider = DataProvider.fromCallbacks(
+                query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+                    return usuarioService.listarUsuariosPaginados(offset, limit).stream();
+                },
+                query -> Math.toIntExact(usuarioService.contarUsuario() - 1)
+        );
+    }
 
     @Override
     protected void init(VaadinRequest request) {
@@ -61,14 +71,13 @@ public class CRUDGerente extends UI {
         Page.getCurrent().setTitle("Practica #14 - OCJ - CRUD");
 
         agregar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        agregar.setIcon(FontAwesome.SAVE);
+        agregar.setIcon(VaadinIcons.DISC);
 
         agregar.addClickListener((evento) -> {
             try {
-                if(editando){
+                if (editando) {
                     usuarioService.crearUsuario(usuarioSeleccionadoID, nombre.getValue(), email.getValue(), contrasena.getValue());
-                }
-                else {
+                } else {
                     usuarioService.crearUsuario(usuarioService.contarUsuario(), nombre.getValue(), email.getValue(), contrasena.getValue());
                 }
             } catch (Exception exp) {
@@ -78,7 +87,8 @@ public class CRUDGerente extends UI {
             nombre.setValue("");
             email.setValue("");
             contrasena.setValue("");
-            Page.getCurrent().reload();
+//            Page.getCurrent().reload();
+            dataProvider.refreshAll();
         });
 
         cancelar.addClickListener((evento) -> {
@@ -98,37 +108,31 @@ public class CRUDGerente extends UI {
         email.setCaption("Email: ");
         contrasena.setCaption("Contraseña: ");
 
-        List<Usuario> listaDeUsuarios = usuarioService.listarUsuarios();
-
+        binder = new Binder<>();
         tabla = new Grid();
-        tabla.addColumn("Nombre").setHeaderCaption("Nombre");
-        tabla.addColumn("Email").setHeaderCaption("Email");
+        tabla.setDataProvider(dataProvider);
+        tabla.addColumn(Usuario::getNombre).setCaption("Nombre");
+        tabla.addColumn(Usuario::getEmail).setCaption("Email");
 
-        for (Usuario usuario : listaDeUsuarios) {
-            tabla.addRow(usuario.getNombre(), usuario.getEmail());
-        }
-        ;
-
-        tabla.addSelectionListener((SelectionEvent.SelectionListener) event -> {
-            if (!event.getSelected().isEmpty()) {
+        tabla.addSelectionListener(event -> {
+            if (event.getFirstSelectedItem().isPresent()) {
                 abrirPantalla("Elige una opción", pantallaAccionesGerente);
                 pantallaAccionesGerente.eliminar.addClickListener((evento) -> {
-                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
-                    usuarioService.eliminarUsuario(usuarioID);
-                    Page.getCurrent().reload();
+                    Usuario usuario = event.getFirstSelectedItem().get();
+                    usuarioService.eliminarUsuario((int)usuario.getId());
+                    dataProvider.refreshAll();
                 });
+
                 pantallaAccionesGerente.modificar.addClickListener((evento) -> {
-                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
-                    Usuario usuario = usuarioService.buscarUsuario(usuarioID);
+                    Usuario usuario = event.getFirstSelectedItem().get();
                     nombre.setValue(usuario.getNombre());
                     email.setValue(usuario.getEmail());
                     contrasena.setValue(usuario.getContrasena());
                     editando = true;
-                    usuarioSeleccionadoID = usuarioID;
+                    usuarioSeleccionadoID = (int)usuario.getId();
                 });
             }
         });
-
 
         tabla.setHeight("70%");
 

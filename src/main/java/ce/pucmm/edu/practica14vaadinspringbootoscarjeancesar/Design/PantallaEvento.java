@@ -3,7 +3,7 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoService;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.shared.ui.datefield.Resolution;
+import com.vaadin.shared.ui.datefield.DateResolution;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.*;
@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 @Component
 @UIScope
@@ -21,8 +23,8 @@ public class PantallaEvento extends FormLayout {
     @Autowired
     EventoService eventoService;
 
-    DateField inicio = new PopupDateField("Fecha de inicio");
-    DateField fin = new PopupDateField("Fecha fin");
+    DateField inicio = new DateField("Fecha de inicio");
+    DateField fin = new DateField("Fecha fin");
 
     TextField titulo = new TextField("Titulo");
     TextArea descripcion = new TextArea("Descripcion");
@@ -31,15 +33,15 @@ public class PantallaEvento extends FormLayout {
     Button cancelar = new Button("Cancelar");
     boolean editando = false;
 
-    public PantallaEvento(Date startDate, Date endDate) {
+    public PantallaEvento(LocalDate startDate, LocalDate endDate) {
         inicio.setValue(startDate);
         fin.setValue(endDate);
         setup();
     }
 
     public PantallaEvento() {
-        inicio.setValue(new Date());
-        fin.setValue(new Date());
+        inicio.setValue(LocalDate.now());
+        fin.setValue(LocalDate.now());
         setup();
     }
 
@@ -48,12 +50,12 @@ public class PantallaEvento extends FormLayout {
         setMargin(true);
         setSpacing(true);
 
-        inicio.setResolution(Resolution.MINUTE);
-        fin.setResolution(Resolution.MINUTE);
+        inicio.setResolution(DateResolution.DAY);
+        fin.setResolution(DateResolution.DAY);
         agregar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
 
         agregar.addClickListener((evento) -> {
-            Evento e = new Evento(titulo.getValue(), descripcion.getValue(), false, inicio.getValue(), fin.getValue());
+            Evento e = new Evento(titulo.getValue(), descripcion.getValue(), false, inicio.getValue().atStartOfDay(ZoneId.of("America/La Paz")), fin.getValue().atStartOfDay(ZoneId.of("America/La Paz")));
 
             try {
                 SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
@@ -62,16 +64,19 @@ public class PantallaEvento extends FormLayout {
                         e.getCaption(),
                         e.getDescription(),
                         false,
-                        sdf1.parse(e.getStart().toString()),
-                        sdf1.parse(e.getEnd().toString())
+                        e.getStart(),
+                        e.getEnd()
+//                        sdf1.parse(e.getStart().toString()),
+//                        sdf1.parse(e.getEnd().toString())
                 );
 
             } catch (Exception exp) {
 
             }
 
-            Principal.calendario.addEvent(e);
+//            Principal.calendario.add(e);
 
+            Principal.dataProvider.refreshAll();
             ((Window) getParent()).close();
         });
 
@@ -95,9 +100,9 @@ public class PantallaEvento extends FormLayout {
         }
     }
 
-    public void setDates(Date startDate, Date endDate) {
-        inicio.setValue(startDate);
-        fin.setValue(endDate);
+    public void setDates(ZonedDateTime startDate, ZonedDateTime endDate) {
+        inicio.setValue(startDate.toLocalDate());
+        fin.setValue(endDate.toLocalDate());
     }
 
     public void setEditando(boolean editando) {

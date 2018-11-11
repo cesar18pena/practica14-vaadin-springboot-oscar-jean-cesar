@@ -1,6 +1,6 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.ui.*;
@@ -26,18 +26,16 @@ public class PantallaAccionesGerente extends FormLayout {
         setSpacing(true);
 
         modificar.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        modificar.setIcon(FontAwesome.PENCIL);
+        modificar.setIcon(VaadinIcons.PENCIL);
 
         eliminar.addStyleName(ValoTheme.BUTTON_DANGER);
-        eliminar.setIcon(FontAwesome.TRASH);
+        eliminar.setIcon(VaadinIcons.TRASH);
 
-        cancelar.addClickListener(e -> {
-            ((Window) getParent()).close();
-        });
+        eliminar.addClickListener(e -> ((Window) getParent()).close());
 
-        modificar.addClickListener(e -> {
-            ((Window) getParent()).close();
-        });
+        cancelar.addClickListener(e -> ((Window) getParent()).close());
+
+        modificar.addClickListener(e -> ((Window) getParent()).close());
 
         HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar, cancelar);
         buttons.setSpacing(true);

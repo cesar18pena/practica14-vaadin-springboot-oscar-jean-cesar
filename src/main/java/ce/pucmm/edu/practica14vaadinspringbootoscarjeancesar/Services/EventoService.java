@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -23,12 +25,12 @@ public class EventoService {
         return eventoRepository.findAllByStartAndEnd(start, end);
     }
 
-    public List<Evento> encontrarEventosEnUnRango(Date startDate, Date endDate) {
+    public List<Evento> encontrarEventosEnUnRango(LocalDate startDate, LocalDate endDate) {
         return eventoRepository.findByDatesBetween(startDate, endDate);
     }
 
     @Transactional
-    public Evento crearEvento(String caption, String description, boolean isAllDay, Date start, Date end) {
+    public Evento crearEvento(String caption, String description, boolean isAllDay, ZonedDateTime start, ZonedDateTime end) {
         return eventoRepository.save(new Evento(caption, description, isAllDay, start, end));
     }
 

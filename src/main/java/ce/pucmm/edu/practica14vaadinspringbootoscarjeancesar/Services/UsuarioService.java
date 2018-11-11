@@ -50,6 +50,12 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
+
+    public List<Usuario> listarUsuariosPaginados(int offset, int limit){
+        return usuarioRepository.paginar(offset, limit);
+    }
+
+
     @Transactional
     public Integer contarUsuario() {
         return usuarioRepository.contar()+1;

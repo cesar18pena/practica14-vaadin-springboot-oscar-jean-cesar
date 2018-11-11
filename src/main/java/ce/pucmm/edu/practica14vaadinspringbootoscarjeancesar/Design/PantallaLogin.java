@@ -1,11 +1,10 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Data.UsuarioRepository;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.annotations.Theme;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
@@ -57,7 +56,7 @@ public class PantallaLogin extends UI {
         botonAccion = usuarioService.listarUsuarios().isEmpty() ? new Button("Registrate !") : new Button("Entra !");
 
         botonAccion.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        botonAccion.setIcon(FontAwesome.SIGN_IN);
+        botonAccion.setIcon(VaadinIcons.SIGN_IN);
 
         if (usuarioService.listarUsuarios().isEmpty()) {
             horizontalLayout.addComponents(nombres, email, contrasena);

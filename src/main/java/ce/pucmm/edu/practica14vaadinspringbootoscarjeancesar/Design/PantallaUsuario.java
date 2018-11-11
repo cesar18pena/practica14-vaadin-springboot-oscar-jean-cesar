@@ -4,7 +4,7 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.annotations.Theme;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
@@ -79,10 +79,10 @@ public class PantallaUsuario extends UI {
         Button salir = new Button("Salir");
 
         calendario.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        calendario.setIcon(FontAwesome.CALENDAR);
+        calendario.setIcon(VaadinIcons.CALENDAR);
 
         salir.addStyleName(ValoTheme.BUTTON_DANGER);
-        salir.setIcon(FontAwesome.SIGN_OUT);
+        salir.setIcon(VaadinIcons.SIGN_OUT);
 
         hzl.addComponents(calendario, salir);
         vtl.addComponents(titulo, hzl);
@@ -136,7 +136,7 @@ public class PantallaUsuario extends UI {
 
         Button guardar = new Button("Guardar cambios");
         guardar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        guardar.setIcon(FontAwesome.SAVE);
+        guardar.setIcon(VaadinIcons.DISC);
 
         editarInformacion.addComponents(titulo, nuevoNombre, nuevoEmail, guardar);
 

@@ -5,20 +5,24 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoService;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.annotations.Theme;
+import com.vaadin.data.provider.DataProvider;
 import com.vaadin.event.ShortcutAction;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.icons.VaadinIcons;
 import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
-import com.vaadin.ui.components.calendar.CalendarComponentEvents;
-import com.vaadin.ui.components.calendar.event.EditableCalendarEvent;
-import com.vaadin.ui.components.calendar.handler.BasicEventMoveHandler;
-import com.vaadin.ui.components.calendar.handler.BasicEventResizeHandler;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.addon.calendar.Calendar;
+import org.vaadin.addon.calendar.handler.BasicItemMoveHandler;
+import org.vaadin.addon.calendar.handler.BasicItemResizeHandler;
+import org.vaadin.addon.calendar.item.EditableCalendarItem;
+import org.vaadin.addon.calendar.ui.CalendarComponentEvents;
 
 import javax.persistence.PersistenceException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
@@ -38,9 +42,16 @@ public class Principal extends UI {
     private VerticalLayout verticalLayout = new VerticalLayout();
     public static Calendar calendario = new Calendar();
 
+    public static DataProvider<Evento, Void> dataProvider;
+
     @Autowired
     public Principal(PantallaEvento pantallaEvento) {
         this.pantallaEvento = pantallaEvento;
+
+        dataProvider = DataProvider.fromCallbacks(
+                query -> eventoService.listarEventos().stream(),
+                query -> Math.toIntExact(eventoService.listarEventos().size())
+        );
     }
 
     @Override
@@ -80,19 +91,19 @@ public class Principal extends UI {
         Button salir = new Button("Salir");
 
         agregar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        agregar.setIcon(FontAwesome.PLUS);
+        agregar.setIcon(VaadinIcons.PLUS);
 
         enviarEmail.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        enviarEmail.setIcon(FontAwesome.SEND);
+        enviarEmail.setIcon(VaadinIcons.ENVELOPE);
 
         verUsuario.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        verUsuario.setIcon(FontAwesome.USER);
+        verUsuario.setIcon(VaadinIcons.USER);
 
         CRUD.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        CRUD.setIcon(FontAwesome.USERS);
+        CRUD.setIcon(VaadinIcons.USERS);
 
         salir.addStyleName(ValoTheme.BUTTON_DANGER);
-        salir.setIcon(FontAwesome.SIGN_OUT);
+        salir.setIcon(VaadinIcons.SIGN_OUT);
 
         if (!eventoService.listarEventos().isEmpty()) {
             configuraBotonPantalla(agregar, "Agregar nuevo evento (" + eventoService.listarEventos().size() + ")", pantallaEvento);
@@ -102,7 +113,7 @@ public class Principal extends UI {
 
         configuraBotonPantalla(enviarEmail, "Enviar email", pantallaEmail);
 
-        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, CRUD ,salir);
+        layoutBotones.addComponents(agregar, enviarEmail, verUsuario, CRUD, salir);
 
         salir.addClickListener((evento) -> {
             try {
@@ -141,27 +152,26 @@ public class Principal extends UI {
 
     private void agregarCalendario() {
         Button agregar = new Button("Agregar");
-        agregar.setIcon(FontAwesome.PLUS);
+        agregar.setIcon(VaadinIcons.PLUS);
         agregar.setStyleName(ValoTheme.BUTTON_PRIMARY);
 
-        calendario.setFirstDayOfWeek(1);
+//        calendario.setFirstDayOfWeek(1);
         calendario.setTimeFormat(Calendar.TimeFormat.Format12H);
 
-        calendario.setWeeklyCaptionFormat("yyyy-MM-dd");
-        calendario.setFirstVisibleDayOfWeek(1);
-        calendario.setLastVisibleDayOfWeek(7);
+//        calendario.setWeeklyCaptionFormat("yyyy-MM-dd");
+        calendario.withVisibleDays(1, 7);
         calendario.setSizeFull();
         calendario.setHeight("90%");
 
-        calendario.setHandler(new BasicEventMoveHandler() {
+        calendario.setHandler(new BasicItemMoveHandler() {
             private java.util.Calendar calendarioAux;
 
-            public void eventMove(CalendarComponentEvents.MoveEvent event) {
-                calendarioAux = event.getComponent().getInternalCalendar();
-                super.eventMove(event);
+            public void eventMove(CalendarComponentEvents.ItemMoveEvent event) {
+//                calendarioAux = event.getComponent().getInternalCalendar();
+                super.itemMove(event);
             }
 
-            protected void setDates(EditableCalendarEvent event, Date start, Date end) {
+            protected void setDates(EditableCalendarItem event, ZonedDateTime start, ZonedDateTime end) {
                 Evento e = (Evento) event;
                 e.setStart(start);
                 e.setEnd(end);
@@ -169,8 +179,8 @@ public class Principal extends UI {
             }
         });
 
-        calendario.setHandler(new BasicEventResizeHandler() {
-            protected void setDates(EditableCalendarEvent evento, Date start, Date end) {
+        calendario.setHandler(new BasicItemResizeHandler() {
+            protected void setDates(EditableCalendarItem evento, ZonedDateTime start, ZonedDateTime end) {
                 Evento e = (Evento) evento;
                 e.setStart(start);
                 e.setEnd(end);
@@ -184,16 +194,14 @@ public class Principal extends UI {
         });
 
         calendario.setLocale(Locale.US);
-        calendario.setStartDate(new GregorianCalendar().getTime());
+        calendario.setStartDate(new GregorianCalendar().toZonedDateTime());
         GregorianCalendar finCalendario = new GregorianCalendar();
         finCalendario.set(java.util.Calendar.DATE, 1);
         finCalendario.roll(java.util.Calendar.DATE, -1);
-        calendario.setEndDate(finCalendario.getTime());
+        calendario.setEndDate(finCalendario.toZonedDateTime());
         calendario.setTimeFormat(Calendar.TimeFormat.Format12H);
-        calendario.setFirstVisibleDayOfWeek(1);
-        calendario.setLastVisibleDayOfWeek(7);
-        calendario.setFirstVisibleHourOfDay(6);
-        calendario.setLastVisibleHourOfDay(20);
+        calendario.withVisibleDays(1, 7);
+        calendario.withVisibleHours(6, 20);
         calendario.setSizeFull();
 
         verticalLayout.addComponent(calendario);
