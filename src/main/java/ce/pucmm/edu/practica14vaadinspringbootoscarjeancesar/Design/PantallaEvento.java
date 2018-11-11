@@ -17,8 +17,9 @@ import java.time.ZonedDateTime;
 
 @Component
 public class PantallaEvento extends FormLayout {
-//    public PantallaEvento(@Autowired EventoService eventoService) {
-//        DatePicker inicio = new DatePicker();
+    DatePicker inicio = new DatePicker("manikkas");
+public PantallaEvento(@Autowired EventoService eventoService) {
+    add(inicio);
 //        inicio.setLabel("Selecciona un dia");
 //        inicio.setPlaceholder("Selecciona una fecha");
 //
@@ -89,8 +90,7 @@ public class PantallaEvento extends FormLayout {
 //        } else {
 //            add(titulo, descripcion, buttons);
 //        }
-//    }
-//
+}
     public void setDates(ZonedDateTime startDate, ZonedDateTime endDate) {
 //        inicio.setValue(startDate.toLocalDate());
 //        fin.setValue(endDate.toLocalDate());

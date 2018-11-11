@@ -3,6 +3,8 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.PasswordField;
@@ -30,6 +32,8 @@ public class PantallaLogin extends VerticalLayout {
         botonAccion.setIcon(new Icon(VaadinIcon.SIGN_IN));
         botonAccion.getElement().setAttribute("theme", "primary");
         HorizontalLayout horizontalLayout;
+
+        H1 header = new H1();
 
         if (usuarioService.listarUsuarios().isEmpty()) {
             horizontalLayout = new HorizontalLayout(nombres, email, contrasena);
@@ -71,10 +75,10 @@ public class PantallaLogin extends VerticalLayout {
         });
 
         // Agregar header
-        Text titulo = new Text("Práctica #14 - OCJ");
-        Text subtitulo = usuarioService.listarUsuarios().isEmpty() ? new Text("¡Registre una cuenta para entrar!") : new Text("¡Por favor logueate!");
+        header.setText("Práctica #14 - OCJ");
+        H3 subtitulo = usuarioService.listarUsuarios().isEmpty() ? new H3("¡Registre una cuenta para entrar!") : new H3("¡Por favor logueate!");
 
-        add(titulo, subtitulo, horizontalLayout, botonAccion);
+        add(header, subtitulo, horizontalLayout, botonAccion);
         setAlignItems(Alignment.CENTER);
     }
 }

@@ -4,46 +4,27 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoService;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.data.provider.DataProvider;
-import com.vaadin.event.ShortcutAction;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.router.Route;
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.Window;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.vaadin.addon.calendar.Calendar;
-import org.vaadin.addon.calendar.handler.BasicItemMoveHandler;
-import org.vaadin.addon.calendar.handler.BasicItemResizeHandler;
-import org.vaadin.addon.calendar.item.EditableCalendarItem;
-import org.vaadin.addon.calendar.ui.CalendarComponentEvents;
-
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.textfield.PasswordField;
-import com.vaadin.flow.router.Route;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.button.Button;
-import org.vaadin.stefan.fullcalendar.Entry;
-import org.vaadin.stefan.fullcalendar.FullCalendar;
-import org.vaadin.stefan.fullcalendar.FullCalendarBuilder;
-
+import org.vaadin.calendar.CalendarComponent;
 import javax.persistence.PersistenceException;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.GregorianCalendar;
-import java.util.Locale;
+import java.util.*;
 
 @Route("calendario")
 public class Principal extends VerticalLayout {
-    public static Calendar calendario = new Calendar();
-    public static DataProvider<Evento, Void> dataProvider;
 
     @Autowired
     public Principal(@Autowired final PantallaEvento pantallaEvento,
@@ -52,17 +33,15 @@ public class Principal extends VerticalLayout {
                      @Autowired final PantallaEmail pantallaEmail
     ) {
 
-       VerticalLayout verticalLayout = new VerticalLayout();
+        VerticalLayout verticalLayout = new VerticalLayout();
 
         if (usuarioService.listarUsuarios().isEmpty()) {
             getUI().get().getPage().getHistory().pushState(null, "");
             getUI().get().getPage().reload();
-        }
-        else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado()) {
+        } else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado()) {
             getUI().get().getPage().getHistory().pushState(null, "");
             getUI().get().getPage().reload();
-        }
-        else {
+        } else {
             setAlignItems(Alignment.CENTER);
 
             HorizontalLayout layoutBotones = new HorizontalLayout();
@@ -115,20 +94,22 @@ public class Principal extends VerticalLayout {
                 getUI().get().getPage().reload();
             });
 
-            FullCalendar calendar = FullCalendarBuilder.create().build();
-//
-//            Entry entry = new Entry();
-//            entry.setTitle("Some event");
-//            entry.setStart(LocalDate.now().withDayOfMonth(3).atTime(10, 0));
-//            entry.setEnd(entry.getStart().plusHours(2));
-//            entry.setColor("#ff3333");
-//
-//            calendar.addEntry(entry);
+            eventoService.crearEvento("algo", "alguito", false, ZonedDateTime.now(), ZonedDateTime.now());
+            eventoService.crearEvento("algo1", "alguito1", false, ZonedDateTime.now(), ZonedDateTime.now());
+            eventoService.crearEvento("algo2", "alguito2", false, ZonedDateTime.now(), ZonedDateTime.now());
+            eventoService.crearEvento("algo3", "alguito3", false, ZonedDateTime.now(), ZonedDateTime.now());
 
-            Text header = new Text("Práctica #14 - OCJ");
+            CalendarComponent<Evento> calendario = new CalendarComponent<Evento>()
+                    .withItemDateGenerator(e -> new Date())
+                    .withItemLabelGenerator(e -> e.getCaption());
+            calendario.setItems(new Evento("Evento1", "Este es el evento 1", false, ZonedDateTime.now(), ZonedDateTime.now()));
+            calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getCaption()));
 
-            add(header, layoutBotones, calendar);
-            setFlexGrow(1, calendar);
+            H1 header = new H1("Práctica #14 - OCJ");
+            H2 calSubtitulo = new H2("Calendario");
+
+            add(header, calSubtitulo, layoutBotones, calendario);
+            setAlignItems(Alignment.CENTER);
 
 //            pantallaEvento = new PantallaEvento();
 //            pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
@@ -137,62 +118,6 @@ public class Principal extends VerticalLayout {
         Button agregar = new Button("Agregar");
         agregar.setIcon(new Icon(VaadinIcon.PLUS));
 
-//        calendario.setFirstDayOfWeek(1);
-        calendario.setTimeFormat(Calendar.TimeFormat.Format12H);
-
-//        calendario.setWeeklyCaptionFormat("yyyy-MM-dd");
-        calendario.withVisibleDays(1, 7);
-        calendario.setSizeFull();
-        calendario.setHeight("90%");
-
-        calendario.setHandler(new BasicItemMoveHandler() {
-            private java.util.Calendar calendarioAux;
-
-            public void eventMove(CalendarComponentEvents.ItemMoveEvent event) {
-//                calendarioAux = event.getComponent().getInternalCalendar();
-                super.itemMove(event);
-            }
-
-            protected void setDates(EditableCalendarItem event, ZonedDateTime start, ZonedDateTime end) {
-                Evento e = (Evento) event;
-                e.setStart(start);
-                e.setEnd(end);
-                eventoService.crearEvento(e.getCaption(), e.getDescription(), e.isAllDay(), e.getStart(), e.getEnd());
-            }
-        });
-
-        calendario.setHandler(new BasicItemResizeHandler() {
-            protected void setDates(EditableCalendarItem evento, ZonedDateTime start, ZonedDateTime end) {
-                Evento e = (Evento) evento;
-                e.setStart(start);
-                e.setEnd(end);
-                eventoService.crearEvento(e.getCaption(), e.getDescription(), e.isAllDay(), e.getStart(), e.getEnd());
-            }
-        });
-
-        calendario.setHandler((CalendarComponentEvents.RangeSelectEvent evento) -> {
-            pantallaEvento.setDates(evento.getStart(), evento.getEnd());
-            abrirPantalla("Agregar nuevo evento", pantallaEvento);
-        });
-
-        calendario.setLocale(Locale.US);
-        calendario.setStartDate(new GregorianCalendar().toZonedDateTime());
-        GregorianCalendar finCalendario = new GregorianCalendar();
-        finCalendario.set(java.util.Calendar.DATE, 1);
-        finCalendario.roll(java.util.Calendar.DATE, -1);
-        calendario.setEndDate(finCalendario.toZonedDateTime());
-        calendario.setTimeFormat(Calendar.TimeFormat.Format12H);
-        calendario.withVisibleDays(1, 7);
-        calendario.withVisibleHours(6, 20);
-        calendario.setSizeFull();
-
-//        verticalLayout.addComponent(calendario);
-//        verticalLayout.setExpandRatio(calendario, 1.0f);
-
-        dataProvider = DataProvider.fromCallbacks(
-                query -> eventoService.listarEventos().stream(),
-                query -> Math.toIntExact(eventoService.listarEventos().size())
-        );
     }
 
     private void abrirPantalla(String title, FormLayout form) {
