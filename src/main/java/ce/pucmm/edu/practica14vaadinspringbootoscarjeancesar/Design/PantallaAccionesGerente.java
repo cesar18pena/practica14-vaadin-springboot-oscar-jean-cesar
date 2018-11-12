@@ -16,12 +16,10 @@ public class PantallaAccionesGerente extends VerticalLayout {
     Button eliminar = new Button("Eliminar");
 
     public PantallaAccionesGerente() {
-        setSizeUndefined();
-        setMargin(true);
-        setSpacing(true);
-
+        modificar.getElement().setAttribute("theme", "success");
         modificar.setIcon(new Icon(VaadinIcon.PENCIL));
 
+        eliminar.getElement().setAttribute("theme", "error");
         eliminar.setIcon(new Icon(VaadinIcon.TRASH));
 
         HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar);

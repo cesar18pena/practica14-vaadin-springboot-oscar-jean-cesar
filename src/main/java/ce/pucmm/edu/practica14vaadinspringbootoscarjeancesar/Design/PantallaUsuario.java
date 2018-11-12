@@ -5,10 +5,7 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioSer
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.H6;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -32,7 +29,7 @@ public class PantallaUsuario extends VerticalLayout {
 
         HorizontalLayout horizontalLayout;
         HorizontalLayout botones;
-        VerticalLayout editarInformacion;
+        FormLayout editarInformacion;
 
         if (usuarioService.listarUsuarios().isEmpty())
             getUI().get().navigate("");
@@ -53,13 +50,15 @@ public class PantallaUsuario extends VerticalLayout {
             horizontalLayout.setAlignItems(Alignment.CENTER);
 
             /* ********* AGREGAR HEADER ********** */
-            H1 titulo = new H1("Ver usuario");
+            H4 titulo = new H4("Práctica #14 - OCJ");
+            H6 subtitulo = new H6("Perfil de usuario");
 
-            Button calendario = new Button("Calendario");
-            calendario.setIcon(new Icon(VaadinIcon.CALENDAR));
+            Button calendario = new Button("Volver al Calendario");
+            calendario.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_LEFT_O));
 
             Button salir = new Button("Salir");
             salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            salir.getElement().setAttribute("theme", "error");
 
             salir.addClickListener((evento) -> {
                 try {
@@ -87,7 +86,8 @@ public class PantallaUsuario extends VerticalLayout {
 
             fml.add(titulo1, nombre, email);
 
-            editarInformacion = new VerticalLayout();
+            VerticalLayout editarVertical = new VerticalLayout();
+            editarInformacion = new FormLayout();
 
             H3 titulo2 = new H3("Editar datos del usuario");
 
@@ -95,9 +95,10 @@ public class PantallaUsuario extends VerticalLayout {
             TextField nuevoNombre = new TextField("Nombre");
 
             Button guardar = new Button("Guardar cambios");
-            guardar.setIcon(new Icon(VaadinIcon.DISC));
+            guardar.setIcon(new Icon(VaadinIcon.DATABASE));
 
-            editarInformacion.add(titulo2, nuevoNombre, nuevoEmail, guardar);
+            editarInformacion.add(titulo2, nuevoNombre, nuevoEmail);
+            editarVertical.add(titulo2, editarInformacion, guardar);
 
             /* ********* AGREGAR FILTRO DE INFORMACION ********** */
             guardar.addClickListener((evento) -> {
@@ -119,12 +120,12 @@ public class PantallaUsuario extends VerticalLayout {
                 }
             });
 
-            horizontalLayout.add(fml, editarInformacion);
+            horizontalLayout.add(fml, editarVertical);
             horizontalLayout.setAlignItems(Alignment.CENTER);
 
             botones.add(calendario, salir);
 
-            add(titulo, botones, horizontalLayout);
+            add(titulo, subtitulo, botones, horizontalLayout);
         }
     }
 }

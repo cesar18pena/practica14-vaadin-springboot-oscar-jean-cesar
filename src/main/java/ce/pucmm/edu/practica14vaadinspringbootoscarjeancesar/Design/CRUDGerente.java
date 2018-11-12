@@ -2,6 +2,10 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.component.button.Button;
@@ -20,11 +24,12 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.PersistenceException;
+
 @Route("gerentes")
 @SpringComponent
 @UIScope
 public class CRUDGerente extends VerticalLayout {
-
     boolean editando = false;
     Integer usuarioSeleccionadoID;
     DataProvider<Usuario, Void> dataProvider;
@@ -47,7 +52,12 @@ public class CRUDGerente extends VerticalLayout {
         Grid<Usuario> tabla = new Grid<>();
 
         Button agregar = new Button("Salvar");
+        agregar.setIcon(new Icon(VaadinIcon.DATABASE));
+        agregar.getElement().setAttribute("theme", "primary");
+
         Button cancelar = new Button("Cancelar");
+        cancelar.setIcon(new Icon(VaadinIcon.CLOSE_CIRCLE_O));
+        cancelar.getElement().setAttribute("theme", "error");
 
         PantallaAccionesGerente pantallaAccionesGerente = new PantallaAccionesGerente();
 
@@ -56,9 +66,6 @@ public class CRUDGerente extends VerticalLayout {
         else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado())
             getUI().get().navigate("");
         else {
-            agregar.setIcon(new Icon(VaadinIcon.DISC));
-            agregar.getElement().setAttribute("theme", "primary");
-
             agregar.addClickListener((evento) -> {
                 try {
                     if (editando) {
@@ -83,7 +90,37 @@ public class CRUDGerente extends VerticalLayout {
                 contrasena.setValue("");
             });
 
-            H1 header = new H1("CRUD de Gerentes");
+
+            H4 titulo = new H4("Práctica #14 - OCJ");
+            H6 subtitulo = new H6("CRUD de Gerentes");
+
+            HorizontalLayout botones = new HorizontalLayout();
+
+            Button calendario = new Button("Volver al Calendario");
+            calendario.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_LEFT_O));
+
+            Button salir = new Button("Salir");
+            salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            salir.getElement().setAttribute("theme", "error");
+
+            botones.add(calendario, salir);
+
+            salir.addClickListener((evento) -> {
+                try {
+                    Usuario usuarioaux = usuarioService.listarUsuarios().get(0);
+                    usuarioaux.setEstaLogueado(false);
+                    usuarioService.editarUsuario(usuarioaux);
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                getUI().get().navigate("");
+            });
+
+            calendario.addClickListener((evento) -> getUI().get().navigate("calendario"));
 
             HorizontalLayout botoneslayout = new HorizontalLayout(agregar, cancelar);
             botoneslayout.setSpacing(true);
@@ -115,17 +152,20 @@ public class CRUDGerente extends VerticalLayout {
                         contrasena.setValue(usuario.getContrasena());
                         editando = true;
                         usuarioSeleccionadoID = (int) usuario.getId();
+
                         try {
                             binder.writeBean(usuario);
-                        } catch(ValidationException e) {
+                        } catch (ValidationException e) {
                             e.printStackTrace();
                         }
                     });
                 }
             });
+
             setAlignItems(Alignment.CENTER);
-            add(header, nombre, email, contrasena, botoneslayout, tabla);
-            tabla.setWidth("75%");
+            FormLayout form = new FormLayout(nombre, email, contrasena);
+
+            add(titulo, subtitulo, botones, form, botoneslayout, tabla);
 
             nombre.setValue("");
             email.setValue("");

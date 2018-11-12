@@ -6,21 +6,21 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoServ
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.button.Button;
 import org.vaadin.calendar.CalendarComponent;
+import org.vaadin.calendar.data.AbstractCalendarDataProvider;
 
 import javax.persistence.PersistenceException;
 import java.time.ZonedDateTime;
@@ -35,11 +35,16 @@ public class Principal extends VerticalLayout {
             .withItemLabelGenerator(e -> e.getCaption());
 
     @Autowired
+    public static EventoService eventoService;
+
+    @Autowired
     public Principal(@Autowired final PantallaEvento pantallaEvento,
                      @Autowired UsuarioService usuarioService,
                      @Autowired EventoService eventoService,
                      @Autowired final PantallaEmail pantallaEmail
     ) {
+        Principal.eventoService = eventoService;
+
         if (usuarioService.listarUsuarios().isEmpty()) {
             getUI().get().navigate("");
         } else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado()) {
@@ -56,18 +61,21 @@ public class Principal extends VerticalLayout {
             Button CRUD = new Button("CRUD de Gerentes");
             Button salir = new Button("Salir");
 
-            agregar.setIcon(new Icon(VaadinIcon.PLUS));
-            enviarEmail.setIcon(new Icon(VaadinIcon.ENVELOPE));
-            verUsuario.setIcon(new Icon(VaadinIcon.USER));
-            CRUD.setIcon(new Icon(VaadinIcon.USERS));
+            agregar.setIcon(new Icon(VaadinIcon.CALENDAR_CLOCK));
+            agregar.getElement().setAttribute("theme", "primary");
+
+            enviarEmail.setIcon(new Icon(VaadinIcon.CALENDAR_ENVELOPE));
+            enviarEmail.getElement().setAttribute("theme", "primary");
+
+            verUsuario.setIcon(new Icon(VaadinIcon.CLIPBOARD_USER));
+
+            CRUD.setIcon(new Icon(VaadinIcon.FORM));
+            CRUD.getElement().setAttribute("theme", "success");
+
             salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            salir.getElement().setAttribute("theme", "error");
 
-            if (!eventoService.listarEventos().isEmpty()) {
-                configuraBotonPantalla(agregar, pantallaEvento);
-            } else {
-                configuraBotonPantalla(agregar, pantallaEvento);
-            }
-
+            configuraBotonPantalla(agregar, pantallaEvento);
             configuraBotonPantalla(enviarEmail, pantallaEmail);
 
             layoutBotones = new HorizontalLayout(agregar, enviarEmail, verUsuario, CRUD, salir);
@@ -96,20 +104,24 @@ public class Principal extends VerticalLayout {
             eventoService.crearEvento("algo2", "alguito2", false, ZonedDateTime.now(), ZonedDateTime.now());
             eventoService.crearEvento("algo3", "alguito3", false, ZonedDateTime.now(), ZonedDateTime.now());
 
-            calendario.setItems(new Evento("Evento1", "Este es el evento 1", false, ZonedDateTime.now(), ZonedDateTime.now()));
+//            calendario.setItems(new Evento("Evento1", "Este es el evento 1", false, ZonedDateTime.now(), ZonedDateTime.now()));
+
+            calendario.setDataProvider(new CustomDataProvider());
             calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getCaption()));
 
-            H1 header = new H1("Práctica #14 - OCJ");
-            H2 calSubtitulo = new H2("Calendario");
+            H4 titulo = new H4("Práctica #14 - OCJ");
+            H6 subtitulo = new H6("Calendario");
 
-            add(header, calSubtitulo, layoutBotones, calendario);
             setAlignItems(Alignment.CENTER);
+
+            add(titulo, subtitulo, layoutBotones, calendario);
 
 //            pantallaEmail = new PantallaEmail(usuarioService.listarUsuarios().get(0).getEmail());
         }
 
         Button agregar = new Button("Agregar");
         agregar.setIcon(new Icon(VaadinIcon.PLUS));
+        agregar.getElement().setAttribute("theme", "primary");
     }
 
     private void abrirPantalla(VerticalLayout form) {
@@ -123,5 +135,15 @@ public class Principal extends VerticalLayout {
         boton.addClickListener((e) -> {
             abrirPantalla(formulario);
         });
+    }
+}
+
+@SpringComponent
+@UIScope
+class CustomDataProvider extends AbstractCalendarDataProvider<Evento> {
+    @Override
+    public Collection<Evento> getItems(Date fromDate, Date toDate) {
+        List<Evento> eventos = Principal.eventoService.listarEventos();
+        return eventos;
     }
 }
