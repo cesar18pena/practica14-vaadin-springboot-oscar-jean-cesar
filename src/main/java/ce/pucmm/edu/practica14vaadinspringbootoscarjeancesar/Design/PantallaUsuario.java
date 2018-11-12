@@ -2,169 +2,130 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.event.ShortcutAction;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.icons.VaadinIcons;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.PersistenceException;
 
 @Route("usuario")
-public class PantallaUsuario extends UI {
-    @Autowired
-    private UsuarioService usuarioService;
+@SpringComponent
+@UIScope
+public class PantallaUsuario extends VerticalLayout {
 
-    private Usuario usuario;
+    public PantallaUsuario(@Autowired UsuarioService usuarioService) {
+        Usuario usuario;
 
-    private VerticalLayout layout;
-    private HorizontalLayout horizontalLayout;
-    private FormLayout editarInformacion;
+        HorizontalLayout horizontalLayout;
+        HorizontalLayout botones;
+        VerticalLayout editarInformacion;
 
-    @Override
-    protected void init(VaadinRequest vaadinRequest) {
         if (usuarioService.listarUsuarios().isEmpty())
-            getUI().getPage().setLocation("/");
+            getUI().get().navigate("");
         else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado())
-            getUI().getPage().setLocation("/");
+            getUI().get().navigate("");
         else {
             usuario = usuarioService.listarUsuarios().get(0);
 
-            configurarEstilo();
-            agregarHeader();
-            mostrarInformacionUsuario();
-            agregarFormularioInformacion();
-            cambiarEstilo();
+            /* ********* CONFIGURAR ESTILO ********** */
+            horizontalLayout = new HorizontalLayout();
+            botones = new HorizontalLayout();
+
+            setAlignItems(Alignment.CENTER);
+
+            horizontalLayout.setMargin(true);
+            horizontalLayout.setSpacing(true);
+            horizontalLayout.setSizeFull();
+            horizontalLayout.setAlignItems(Alignment.CENTER);
+
+            /* ********* AGREGAR HEADER ********** */
+            H1 titulo = new H1("Ver usuario");
+
+            Button calendario = new Button("Calendario");
+            calendario.setIcon(new Icon(VaadinIcon.CALENDAR));
+
+            Button salir = new Button("Salir");
+            salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+
+            salir.addClickListener((evento) -> {
+                try {
+                    Usuario usuarioaux = usuarioService.listarUsuarios().get(0);
+                    usuarioaux.setEstaLogueado(false);
+                    usuarioService.editarUsuario(usuarioaux);
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                getUI().get().navigate("");
+            });
+
+            calendario.addClickListener((evento) -> getUI().get().navigate("calendario"));
+
+            /* ********* MOSTRAR INFORMACION DE USUARIO ********** */
+            FormLayout fml = new FormLayout();
+
+            H3 titulo1 = new H3("Datos del usuario");
+            H6 nombre = new H6("Nombre: " + usuario.getNombre());
+            H6 email = new H6("Correo electrónico: " + usuario.getEmail());
+
+            fml.add(titulo1, nombre, email);
+
+            editarInformacion = new VerticalLayout();
+
+            H3 titulo2 = new H3("Editar datos del usuario");
+
+            TextField nuevoEmail = new TextField("Email");
+            TextField nuevoNombre = new TextField("Nombre");
+
+            Button guardar = new Button("Guardar cambios");
+            guardar.setIcon(new Icon(VaadinIcon.DISC));
+
+            editarInformacion.add(titulo2, nuevoNombre, nuevoEmail, guardar);
+
+            /* ********* AGREGAR FILTRO DE INFORMACION ********** */
+            guardar.addClickListener((evento) -> {
+                try {
+                    if (!nuevoEmail.getValue().equals(""))
+                        usuario.setEmail(nuevoEmail.getValue());
+
+                    if (!nuevoNombre.getValue().equals(""))
+                        usuario.setNombre(nuevoNombre.getValue());
+
+                    usuarioService.editarUsuario(usuario);
+                    getUI().get().getPage().reload();
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            horizontalLayout.add(fml, editarInformacion);
+            horizontalLayout.setAlignItems(Alignment.CENTER);
+
+            botones.add(calendario, salir);
+
+            add(titulo, botones, horizontalLayout);
         }
-    }
-
-    private void configurarEstilo() {
-        Page.getCurrent().setTitle("Informacion de usuario");
-
-        layout = new VerticalLayout();
-        horizontalLayout = new HorizontalLayout();
-
-        layout.setMargin(true);
-        layout.setSpacing(true);
-        layout.setSizeFull();
-        layout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-
-        horizontalLayout.setMargin(true);
-        horizontalLayout.setSpacing(true);
-        horizontalLayout.setSizeFull();
-        horizontalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-
-        setContent(layout);
-    }
-
-    private void agregarHeader() {
-        HorizontalLayout hzl = new HorizontalLayout();
-        VerticalLayout vtl = new VerticalLayout();
-
-        vtl.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-
-        hzl.setSpacing(true);
-        hzl.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-
-        Label titulo = new Label("Práctica #14 - OCJ");
-        titulo.addStyleName(ValoTheme.LABEL_H1);
-        titulo.setSizeUndefined();
-
-        Button calendario = new Button("Calendario");
-        Button salir = new Button("Salir");
-
-        calendario.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        calendario.setIcon(VaadinIcons.CALENDAR);
-
-        salir.addStyleName(ValoTheme.BUTTON_DANGER);
-        salir.setIcon(VaadinIcons.SIGN_OUT);
-
-        hzl.addComponents(calendario, salir);
-        vtl.addComponents(titulo, hzl);
-
-        salir.addClickListener((evento) -> {
-            try {
-                Usuario usuario = usuarioService.listarUsuarios().get(0);
-                usuario.setEstaLogueado(false);
-                usuarioService.editarUsuario(usuario);
-            } catch (PersistenceException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            getUI().getPage().setLocation("/");
-        });
-
-        calendario.addClickListener((evento) -> getUI().getPage().setLocation("/calendario"));
-
-        layout.addComponent(vtl);
-    }
-
-    private void mostrarInformacionUsuario() {
-        FormLayout fml = new FormLayout();
-
-        Label titulo = new Label("Datos del usuario");
-        titulo.addStyleName(ValoTheme.LABEL_H3);
-        titulo.setSizeUndefined();
-
-        Label nombre = new Label("Nombre: " + usuario.getNombre());
-        nombre.addStyleName(ValoTheme.LABEL_SUCCESS);
-
-        Label email = new Label("Correo electrónico: " + usuario.getEmail());
-        email.addStyleName(ValoTheme.LABEL_SUCCESS);
-
-        fml.addComponents(titulo, nombre, email);
-
-        horizontalLayout.addComponents(fml);
-    }
-
-    private void agregarFormularioInformacion() {
-        editarInformacion = new FormLayout();
-
-        Label titulo = new Label("Editar datos del usuario");
-        titulo.addStyleName(ValoTheme.LABEL_H3);
-
-        TextField nuevoEmail = new TextField("Email");
-        TextField nuevoNombre = new TextField("Nombre");
-
-        Button guardar = new Button("Guardar cambios");
-        guardar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        guardar.setIcon(VaadinIcons.DISC);
-
-        editarInformacion.addComponents(titulo, nuevoNombre, nuevoEmail, guardar);
-
-        guardar.addClickListener((evento) -> {
-            try {
-                if (!nuevoEmail.getValue().equals(""))
-                    usuario.setEmail(nuevoEmail.getValue());
-
-                if (!nuevoNombre.getValue().equals(""))
-                    usuario.setNombre(nuevoNombre.getValue());
-
-                usuarioService.editarUsuario(usuario);
-            } catch (PersistenceException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            getUI().getPage().setLocation("/usuario");
-        });
-
-        guardar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
-
-        horizontalLayout.addComponent(editarInformacion);
-    }
-
-    private void cambiarEstilo() {
-        layout.addComponent(horizontalLayout);
     }
 }
 

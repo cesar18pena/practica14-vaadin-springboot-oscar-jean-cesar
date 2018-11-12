@@ -9,6 +9,8 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.server.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -20,6 +22,8 @@ import com.vaadin.flow.component.button.Button;
 import javax.persistence.PersistenceException;
 
 @Route("")
+@SpringComponent
+@UIScope
 public class PantallaLogin extends VerticalLayout {
     public PantallaLogin(@Autowired UsuarioService usuarioService) {
 
@@ -60,8 +64,6 @@ public class PantallaLogin extends VerticalLayout {
                         usuario.setEstaLogueado(true);
                         usuarioService.editarUsuario(usuario);
                         getUI().get().navigate("calendario");
-//                        getUI().get().getPage().getHistory().pushState(null, "calendario");
-//                        getUI().get().getPage().reload();
                     } catch (PersistenceException e) {
                         e.printStackTrace();
                     } catch (NullPointerException e) {

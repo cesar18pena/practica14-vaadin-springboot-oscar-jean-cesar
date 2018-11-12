@@ -1,40 +1,31 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import com.vaadin.icons.VaadinIcons;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
-import org.springframework.stereotype.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 
-@Component
-public class PantallaAccionesGerente extends FormLayout {
+@SpringComponent
+@UIScope
+public class PantallaAccionesGerente extends VerticalLayout {
 
     Button modificar = new Button("Modificar");
     Button eliminar = new Button("Eliminar");
-    Button cancelar = new Button("Cancelar");
 
     public PantallaAccionesGerente() {
-        setup();
-    }
-
-    private void setup() {
         setSizeUndefined();
         setMargin(true);
         setSpacing(true);
 
-        modificar.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        modificar.setIcon(VaadinIcons.PENCIL);
+        modificar.setIcon(new Icon(VaadinIcon.PENCIL));
 
-        eliminar.addStyleName(ValoTheme.BUTTON_DANGER);
-        eliminar.setIcon(VaadinIcons.TRASH);
+        eliminar.setIcon(new Icon(VaadinIcon.TRASH));
 
-        eliminar.addClickListener(e -> ((Window) getParent()).close());
-
-        cancelar.addClickListener(e -> ((Window) getParent()).close());
-
-        modificar.addClickListener(e -> ((Window) getParent()).close());
-
-        HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar, cancelar);
+        HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar);
         buttons.setSpacing(true);
-        addComponent(buttons);
+        add(buttons);
     }
 }

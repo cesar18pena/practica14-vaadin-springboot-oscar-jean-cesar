@@ -6,12 +6,14 @@ import com.vaadin.event.ShortcutAction;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-@Component
-
+@SpringComponent
+@UIScope
 public class PantallaEmail extends VerticalLayout {
 
 //    TextField desde = new TextField("Desde:");
