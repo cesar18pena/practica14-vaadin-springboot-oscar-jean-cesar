@@ -5,11 +5,8 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.EventoService;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
@@ -20,10 +17,12 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.button.Button;
 import org.vaadin.calendar.CalendarComponent;
+import org.vaadin.calendar.CalendarItemTheme;
 import org.vaadin.calendar.data.AbstractCalendarDataProvider;
 
 import javax.persistence.PersistenceException;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Route("calendario")
@@ -31,8 +30,9 @@ import java.util.*;
 @UIScope
 public class Principal extends VerticalLayout {
     public static CalendarComponent<Evento> calendario = new CalendarComponent<Evento>()
-            .withItemDateGenerator(e -> new Date())
-            .withItemLabelGenerator(e -> e.getCaption());
+            .withItemDateGenerator(Evento::getFecha)
+            .withItemLabelGenerator(Evento::getTitulo)
+            .withItemThemeGenerator(Evento::getColor);
 
     @Autowired
     public static EventoService eventoService;
@@ -99,15 +99,14 @@ public class Principal extends VerticalLayout {
             verUsuario.addClickListener((evento) -> getUI().get().navigate("usuario"));
             CRUD.addClickListener((evento) -> getUI().get().navigate("gerentes"));
 
-            eventoService.crearEvento("algo", "alguito", false, ZonedDateTime.now(), ZonedDateTime.now());
-            eventoService.crearEvento("algo1", "alguito1", false, ZonedDateTime.now(), ZonedDateTime.now());
-            eventoService.crearEvento("algo2", "alguito2", false, ZonedDateTime.now(), ZonedDateTime.now());
-            eventoService.crearEvento("algo3", "alguito3", false, ZonedDateTime.now(), ZonedDateTime.now());
-
-//            calendario.setItems(new Evento("Evento1", "Este es el evento 1", false, ZonedDateTime.now(), ZonedDateTime.now()));
+            eventoService.crearEvento(
+                    Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()),
+                    "Entrega practica 14",
+                    CalendarItemTheme.Green
+            );
 
             calendario.setDataProvider(new CustomDataProvider());
-            calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getCaption()));
+            calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getTitulo()));
 
             H4 titulo = new H4("Práctica #14 - OCJ");
             H6 subtitulo = new H6("Calendario");

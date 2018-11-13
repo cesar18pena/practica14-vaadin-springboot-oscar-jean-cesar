@@ -10,25 +10,21 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.vaadin.calendar.CalendarItemTheme;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 @SpringComponent
 @UIScope
 public class PantallaEvento extends VerticalLayout {
-    DatePicker inicio = new DatePicker();
-    DatePicker fin = new DatePicker();
+    DatePicker fecha = new DatePicker();
     boolean editando = false;
 
     public PantallaEvento(@Autowired EventoService eventoService) {
@@ -36,17 +32,11 @@ public class PantallaEvento extends VerticalLayout {
 
         H3 header = new H3("Agregar Evento");
 
-        inicio.setLabel("Selecciona el dia de inicio");
-        inicio.setPlaceholder("Selecciona una fecha");
-        inicio.setValue(LocalDate.now());
-
-        fin.setLabel("Selecciona el dia de fin");
-        fin.setPlaceholder("Selecciona una fecha");
-        fin.setValue(LocalDate.now());
+        fecha.setLabel("Selecciona el dia de inicio");
+        fecha.setPlaceholder("Selecciona una fecha");
+        fecha.setValue(LocalDate.now());
 
         TextField titulo = new TextField("Titulo");
-
-        TextArea descripcion = new TextArea("Descripcion");
 
         Button agregar = new Button("Agregar");
         agregar.setIcon(new Icon(VaadinIcon.DATABASE));
@@ -61,37 +51,29 @@ public class PantallaEvento extends VerticalLayout {
         setAlignItems(Alignment.CENTER);
 
         if (!editando) {
-            formLayout.add(titulo, descripcion, inicio, fin);
+            formLayout.add(titulo, fecha);
         } else {
-            formLayout.add(titulo, descripcion);
+            formLayout.add(titulo);
         }
 
         add(header, formLayout, botones);
 
         agregar.addClickListener((evento) -> {
             Evento e = new Evento(
+                    Date.from(fecha.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     titulo.getValue(),
-                    descripcion.getValue(),
-                    false,
-                    inicio.getValue().atStartOfDay(ZoneId.systemDefault()),
-                    fin.getValue().atStartOfDay(ZoneId.systemDefault())
+                    CalendarItemTheme.Green
             );
-
-            SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
             try {
                 eventoService.crearEvento(
-                        e.getCaption(),
-                        e.getDescription(),
-                        false,
-                        e.getStart(),
-                        e.getEnd()
+                        e.getFecha(),
+                        e.getTitulo(),
+                        e.getColor()
                 );
 
                 titulo.setValue("");
-                descripcion.setValue("");
-                inicio.setValue(LocalDate.now());
-                fin.setValue(LocalDate.now());
+                fecha.setValue(LocalDate.now());
             } catch (Exception exp) {
                 exp.printStackTrace();
             }
@@ -100,9 +82,8 @@ public class PantallaEvento extends VerticalLayout {
         });
     }
 
-    public void setDates(ZonedDateTime startDate, ZonedDateTime endDate) {
-        inicio.setValue(startDate.toLocalDate());
-        fin.setValue(endDate.toLocalDate());
+    public void setDates(ZonedDateTime nuevaFecha) {
+        fecha.setValue(nuevaFecha.toLocalDate());
     }
 
     public void setEditando(boolean editando) {
