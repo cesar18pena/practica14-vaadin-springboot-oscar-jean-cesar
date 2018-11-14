@@ -80,5 +80,10 @@ public class PantallaEvento extends VerticalLayout {
             }
             Principal.calendario.refresh();
         });
+
+        cancelar.addClickListener((evento) -> {
+            titulo.setValue("");
+            fecha.setValue(LocalDate.now());
+        });
     }
 }
