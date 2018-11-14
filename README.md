@@ -17,7 +17,7 @@ Crear una aplicación web utilizando Vaadin y SpringBoot, basándose en los conc
 
 ## Vídeo de demostración del proyecto
 
-(Todavía no realizado)
+https://youtu.be/H98N3X1jHV8  ==> (click en el link para ver el vídeo)
 
 ## Tecnologías requeridas
 
