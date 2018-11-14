@@ -40,6 +40,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-mail')
     compile('com.vaadin:vaadin-spring-boot-starter:10.0.4')
+    compile('com.sendgrid:sendgrid-java:3.2.1')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.vaadin.addons:numberfield:0.5.1')
     compile('org.vaadin.blackbluegl:calendar-component:2.0-BETA4')
