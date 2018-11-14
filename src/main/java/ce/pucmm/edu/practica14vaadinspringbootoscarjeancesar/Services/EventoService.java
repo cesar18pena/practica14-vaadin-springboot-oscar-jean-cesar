@@ -4,7 +4,9 @@ import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Data.EventoReposito
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.vaadin.calendar.CalendarItemTheme;
 
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
@@ -19,23 +21,39 @@ public class EventoService {
         return eventoRepository.findAll();
     }
 
-    public List<Evento> encontrarEventoPorFecha(Date start, Date end) {
-        return eventoRepository.findAllByStartAndEnd(start, end);
+    public List<Evento> encontrarEventoPorFecha(Date fecha) {
+        return eventoRepository.findAllByFecha(fecha);
     }
 
-    public List<Evento> encontrarEventosEnUnRango(Date startDate, Date endDate) {
-        return eventoRepository.findByDatesBetween(startDate, endDate);
+    public List<Evento> encontrarEventosEnUnRango(Date fechaInicio, Date fechaFin) {
+        return eventoRepository.findByDatesBetween(fechaInicio, fechaFin);
+    }
+
+    public Evento encontrarEventoPorID(long id){
+        return eventoRepository.getOne(id);
     }
 
     @Transactional
-    public Evento crearEvento(String caption, String description, boolean isAllDay, Date start, Date end) {
-        return eventoRepository.save(new Evento(caption, description, isAllDay, start, end));
+    public Evento crearEvento(long id, Date fecha, String titulo, CalendarItemTheme color) {
+        return eventoRepository.save(new Evento(id, fecha, titulo, color));
+    }
+
+    public void editarEvento(long EventoID) throws Exception {
+        try {
+            Evento evento = encontrarEventoPorID(EventoID);
+            eventoRepository.save(evento);
+        } catch (PersistenceException e) {
+            throw new PersistenceException("Hubo un error al editar el evento.");
+        } catch (NullPointerException e) {
+            throw new NullPointerException("Al editar el evento hubo un error de datos nulos.");
+        } catch (Exception e) {
+            throw new Exception("Hubo un error general al editar un evento.");
+        }
     }
 
     @Transactional
-    public boolean borrarEvento(Evento customEvent) {
-        eventoRepository.delete(customEvent);
+    public boolean borrarEvento(Evento evento) {
+        eventoRepository.delete(evento);
         return true;
     }
-
 }

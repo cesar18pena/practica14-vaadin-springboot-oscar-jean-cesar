@@ -1,80 +1,83 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
 import com.sendgrid.*;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.ui.*;
-import org.springframework.stereotype.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextArea;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
-@Component
+@SpringComponent
 @UIScope
-@SpringUI
-public class PantallaEmail extends FormLayout {
-
-    TextField desde = new TextField("Desde:");
-    TextField hacia = new TextField("Hacia:");
-    TextField titulo = new TextField("Titulo");
-    TextArea descripcion = new TextArea("Descripcion");
-
-    Button enviar = new Button("Enviar");
-    Button cancelar = new Button("Cancelar");
-
-    public PantallaEmail(String email) {
-        desde.setValue(email);
-        setup();
-    }
+public class PantallaEmail extends VerticalLayout {
+    TextField para = new TextField("Para:");
+    TextField asunto = new TextField("Asunto:");
+    TextArea cuerpo = new TextArea("Cuerpo:");
 
     public PantallaEmail() {
-        desde.setValue("");
-        setup();
-    }
+        FormLayout formLayout = new FormLayout();
 
-    private void setup() {
-        setSizeUndefined();
-        setMargin(true);
-        setSpacing(true);
+        H3 header = new H3("Enviar Correo");
 
-        enviar.setClickShortcut(ShortcutAction.KeyCode.ENTER);
+        Button enviar = new Button("Enviar");
+        enviar.setIcon(new Icon(VaadinIcon.ARROW_FORWARD));
+        enviar.getElement().setAttribute("theme", "primary");
+
+        Button cancelar = new Button("Cancelar");
+        cancelar.setIcon(new Icon(VaadinIcon.CLOSE_CIRCLE_O));
+        cancelar.getElement().setAttribute("theme", "error");
+
+        HorizontalLayout botones = new HorizontalLayout(enviar, cancelar);
+
+        botones.setSpacing(true);
+
+        formLayout.add(para, asunto, cuerpo);
+        setAlignItems(Alignment.CENTER);
+
+        add(header, formLayout, botones);
+
         enviar.addClickListener((evento) -> {
-                Email from = new Email(desde.getValue());
-                String subject = titulo.getValue();
-                Email to = new Email(hacia.getValue());
-                Content content = new Content("text/plain", descripcion.getValue());
-                Mail mail = new Mail(from, subject, to, content);
+            Email desdeEmail = new Email("cesar18pena@gmail.com");
+            String asuntoEmail = asunto.getValue();
+            Email paraEmail = new Email(para.getValue());
+            Content cuerpoEmail = new Content("text/plain", cuerpo.getValue());
+            Mail email = new Mail(desdeEmail, asuntoEmail, paraEmail, cuerpoEmail);
 
-                SendGrid sg = new SendGrid(System.getenv("SENDGRID_API_KEY"));
-                Request request = new Request();
-                try {
-                    request.method = Method.POST;
-                    request.endpoint = "mail/send";
-                    request.body = mail.build();
-                    Response response = sg.api(request);
-                    System.out.println(response.statusCode);
-                    System.out.println(response.body);
-                    System.out.println(response.headers);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                ((Window)getParent()).close();
+            String apiKey = "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";
+            SendGrid sg = new SendGrid(apiKey);
+            Request request = new Request();
+
+            try {
+                request.method = Method.POST;
+                request.endpoint = "mail/send";
+                request.body = email.build();
+                Response response = sg.api(request);
+
+                System.out.println(response.statusCode);
+                System.out.println(response.body);
+                System.out.println(response.headers);
+
+                para.setValue("");
+                asunto.setValue("");
+                cuerpo.setValue("");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
 
         cancelar.addClickListener((evento) -> {
-            ((Window)getParent()).close();
+            para.setValue("");
+            asunto.setValue("");
+            cuerpo.setValue("");
         });
-
-        HorizontalLayout botoneslayout = new HorizontalLayout(enviar, cancelar);
-        botoneslayout.setSpacing(true);
-
-        desde.setCaption("Desde:");
-        desde.setValue("practica14ocj@ocj.com");
-        hacia.setCaption("Hacia:");
-
-        titulo.setCaption("Titulo:");
-        descripcion.setCaption("Descripcion:");
-
-        addComponents(desde, hacia, titulo, descripcion, botoneslayout);
     }
 }

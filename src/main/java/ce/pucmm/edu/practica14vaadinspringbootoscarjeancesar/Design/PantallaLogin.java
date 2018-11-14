@@ -1,75 +1,55 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Data.UsuarioRepository;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.annotations.Theme;
-import com.vaadin.event.ShortcutAction;
-import com.vaadin.server.FontAwesome;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.button.Button;
+
 
 import javax.persistence.PersistenceException;
 
-@SpringUI(path = "/")
-@Theme("valo")
-public class PantallaLogin extends UI {
-    @Autowired
-    private UsuarioService usuarioService;
+@Route("")
+@SpringComponent
+@UIScope
+public class PantallaLogin extends VerticalLayout {
+    public PantallaLogin(@Autowired UsuarioService usuarioService) {
 
-    private HorizontalLayout horizontalLayout = new HorizontalLayout();
-    private VerticalLayout verticalLayout = new VerticalLayout();
-    private Button botonAccion = new Button();
-
-    @Override
-    protected void init(VaadinRequest request) {
-        if (!usuarioService.listarUsuarios().isEmpty() && usuarioService.listarUsuarios().get(0).isEstaLogueado())
-            getUI().getPage().setLocation("/calendario");
-        else {
-            configurarEstilo();
-            agregarFormulario();
-            agregarHeader();
-        }
-    }
-
-    private void configurarEstilo() {
-        Page.getCurrent().setTitle("Login");
-
-        horizontalLayout = new HorizontalLayout();
-
-        horizontalLayout.setSpacing(true);
-        horizontalLayout.setMargin(true);
-        horizontalLayout.setSizeFull();
-        horizontalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-
-        setContent(verticalLayout);
-    }
-
-    private void agregarFormulario() {
+        // Agregar formulario
         TextField email = new TextField("Email");
         PasswordField contrasena = new PasswordField("Contrasena");
         TextField nombres = new TextField("Nombre");
 
-        botonAccion = usuarioService.listarUsuarios().isEmpty() ? new Button("Registrate !") : new Button("Entra !");
-
-        botonAccion.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        botonAccion.setIcon(FontAwesome.SIGN_IN);
+        Button botonAccion = usuarioService.listarUsuarios().isEmpty() ? new Button("Registrate !") : new Button("Entra !");
+        botonAccion.setIcon(new Icon(VaadinIcon.SIGN_IN));
+        botonAccion.getElement().setAttribute("theme", "primary");
+        HorizontalLayout horizontalLayout;
 
         if (usuarioService.listarUsuarios().isEmpty()) {
-            horizontalLayout.addComponents(nombres, email, contrasena);
+            horizontalLayout = new HorizontalLayout(nombres, email, contrasena);
         } else {
-            horizontalLayout.addComponents(email, contrasena);
+            horizontalLayout = new HorizontalLayout(email, contrasena);
         }
 
         botonAccion.addClickListener((evento) -> {
             if (usuarioService.listarUsuarios().isEmpty()) {
                 try {
                     usuarioService.crearUsuario(usuarioService.listarUsuarios().size() + 1, nombres.getValue(), email.getValue(), contrasena.getValue());
-                    getUI().getPage().setLocation("/");
+                    getUI().get().getPage().reload();
                 } catch (PersistenceException e) {
                     e.printStackTrace();
                 } catch (NullPointerException e) {
@@ -83,7 +63,7 @@ public class PantallaLogin extends UI {
                         Usuario usuario = usuarioService.listarUsuarios().get(0);
                         usuario.setEstaLogueado(true);
                         usuarioService.editarUsuario(usuario);
-                        getUI().getPage().setLocation("/calendario");
+                        getUI().get().navigate("calendario");
                     } catch (PersistenceException e) {
                         e.printStackTrace();
                     } catch (NullPointerException e) {
@@ -91,24 +71,17 @@ public class PantallaLogin extends UI {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                } else
-                    getUI().getPage().setLocation("/");
+                } else {
+                    getUI().get().getPage().reload();
+                }
             }
         });
 
-        botonAccion.setClickShortcut(ShortcutAction.KeyCode.ENTER);
-    }
+        // Agregar header
+        H4 titulo = new H4("Práctica #14 - OCJ");
+        H6 subtitulo = usuarioService.listarUsuarios().isEmpty() ? new H6("¡Registre una cuenta para entrar!") : new H6("¡Por favor logueate!");
 
-    public void agregarHeader() {
-        Label titulo = new Label("Práctica #14 - OCJ");
-        titulo.addStyleName(ValoTheme.LABEL_H1);
-        titulo.setSizeUndefined();
-
-        Label subtitulo = usuarioService.listarUsuarios().isEmpty() ? new Label("¡Registre una cuenta para entrar!") : new Label("¡Por favor logueate!");
-        subtitulo.addStyleName(ValoTheme.LABEL_H2);
-        subtitulo.setSizeUndefined();
-
-        verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-        verticalLayout.addComponents(titulo, subtitulo, horizontalLayout, botonAccion);
+        setAlignItems(Alignment.CENTER);
+        add(titulo, subtitulo, horizontalLayout, botonAccion);
     }
 }

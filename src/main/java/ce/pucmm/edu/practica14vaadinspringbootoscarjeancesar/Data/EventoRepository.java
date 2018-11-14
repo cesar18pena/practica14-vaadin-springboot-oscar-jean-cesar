@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.List;
 
 public interface EventoRepository extends JpaRepository<Evento, Long> {
-    List<Evento> findAllByStartAndEnd(Date start, Date end);
+    List<Evento> findAllByFecha(Date fecha);
 
-    @Query("select evento from Evento evento where evento.start between ?1 and ?2 and evento.end between ?1 and ?2")
-    List<Evento> findByDatesBetween(Date startDate, Date endDate);
+    @Query("select evento from Evento evento where evento.fecha between ?1 and ?2")
+    List<Evento> findByDatesBetween(Date fechaInicio, Date fechaFin);
 }

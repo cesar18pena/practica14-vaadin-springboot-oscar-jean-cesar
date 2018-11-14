@@ -1,46 +1,29 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import com.vaadin.server.FontAwesome;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.ui.*;
-import com.vaadin.ui.themes.ValoTheme;
-import org.springframework.stereotype.Component;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 
-@Component
+@SpringComponent
 @UIScope
-@SpringUI
-public class PantallaAccionesGerente extends FormLayout {
+public class PantallaAccionesGerente extends VerticalLayout {
 
     Button modificar = new Button("Modificar");
     Button eliminar = new Button("Eliminar");
-    Button cancelar = new Button("Cancelar");
 
     public PantallaAccionesGerente() {
-        setup();
-    }
+        modificar.getElement().setAttribute("theme", "success");
+        modificar.setIcon(new Icon(VaadinIcon.PENCIL));
 
-    private void setup() {
-        setSizeUndefined();
-        setMargin(true);
-        setSpacing(true);
+        eliminar.getElement().setAttribute("theme", "error");
+        eliminar.setIcon(new Icon(VaadinIcon.TRASH));
 
-        modificar.addStyleName(ValoTheme.BUTTON_FRIENDLY);
-        modificar.setIcon(FontAwesome.PENCIL);
-
-        eliminar.addStyleName(ValoTheme.BUTTON_DANGER);
-        eliminar.setIcon(FontAwesome.TRASH);
-
-        cancelar.addClickListener(e -> {
-            ((Window) getParent()).close();
-        });
-
-        modificar.addClickListener(e -> {
-            ((Window) getParent()).close();
-        });
-
-        HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar, cancelar);
+        HorizontalLayout buttons = new HorizontalLayout(modificar, eliminar);
         buttons.setSpacing(true);
-        addComponent(buttons);
+        add(buttons);
     }
 }

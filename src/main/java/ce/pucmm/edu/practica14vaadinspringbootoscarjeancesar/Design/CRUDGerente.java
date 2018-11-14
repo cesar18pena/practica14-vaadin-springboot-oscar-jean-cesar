@@ -1,55 +1,171 @@
 package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Design;
 
-import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Evento;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model.Usuario;
 import ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Services.UsuarioService;
-import com.vaadin.annotations.Theme;
-import com.vaadin.event.SelectionEvent;
-import com.vaadin.server.FontAwesome;
-import com.vaadin.server.Page;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.*;
-import com.vaadin.ui.components.calendar.event.EditableCalendarEvent;
-import com.vaadin.ui.themes.ValoTheme;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H4;
+import com.vaadin.flow.component.html.H6;
+import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.xml.bind.Binder;
-import java.util.Date;
-import java.util.List;
+import javax.persistence.PersistenceException;
 
-@SpringUI(path = "/gerentes")
-@Theme("valo")
-public class CRUDGerente extends UI {
-    @Autowired
-    private UsuarioService usuarioService;
-
-    TextField nombre = new TextField("Nombre:");
-    TextField email = new TextField("Email:");
-    PasswordField contrasena = new PasswordField("Contraseña:");
-
-    Grid tabla;
-
-    Button agregar = new Button("Salvar");
-    Button cancelar = new Button("Cancelar");
-
+@Route("gerentes")
+@SpringComponent
+@UIScope
+public class CRUDGerente extends VerticalLayout {
     boolean editando = false;
-
     Integer usuarioSeleccionadoID;
+    DataProvider<Usuario, Void> dataProvider;
 
-    private VerticalLayout verticalLayout = new VerticalLayout();
-    private HorizontalLayout paginaEntera = new HorizontalLayout();
+    public CRUDGerente(@Autowired UsuarioService usuarioService) {
+        TextField nombre = new TextField("Nombre:");
+        TextField email = new TextField("Email:");
+        PasswordField contrasena = new PasswordField("Contraseña:");
 
-    PantallaAccionesGerente pantallaAccionesGerente = new PantallaAccionesGerente();
+        dataProvider = DataProvider.fromCallbacks(
+                query -> {
+                    int offset = query.getOffset();
+                    int limit = query.getLimit();
+                    return usuarioService.listarUsuariosPaginados(offset, limit).stream();
+                },
+                query -> Math.toIntExact(usuarioService.contarUsuario() - 1)
+        );
 
-    @Override
-    protected void init(VaadinRequest request) {
+        Binder<Usuario> binder = new Binder<>();
+        Grid<Usuario> tabla = new Grid<>();
+
+        Button agregar = new Button("Salvar");
+        agregar.setIcon(new Icon(VaadinIcon.DATABASE));
+        agregar.getElement().setAttribute("theme", "primary");
+
+        Button cancelar = new Button("Cancelar");
+        cancelar.setIcon(new Icon(VaadinIcon.CLOSE_CIRCLE_O));
+        cancelar.getElement().setAttribute("theme", "error");
+
+        PantallaAccionesGerente pantallaAccionesGerente = new PantallaAccionesGerente();
+
         if (usuarioService.listarUsuarios().isEmpty())
-            getUI().getPage().setLocation("/");
+            getUI().get().navigate("");
         else if (!usuarioService.listarUsuarios().get(0).isEstaLogueado())
-            getUI().getPage().setLocation("/");
+            getUI().get().navigate("");
         else {
-            configurarPagina();
+            agregar.addClickListener((evento) -> {
+                try {
+                    if (editando) {
+                        usuarioService.crearUsuario(usuarioSeleccionadoID, nombre.getValue(), email.getValue(), contrasena.getValue());
+                    } else {
+                        usuarioService.crearUsuario(usuarioService.contarUsuario(), nombre.getValue(), email.getValue(), contrasena.getValue());
+                    }
+                } catch (Exception exp) {
+                    exp.printStackTrace();
+                }
+
+                nombre.setValue("");
+                email.setValue("");
+                contrasena.setValue("");
+
+                dataProvider.refreshAll();
+            });
+
+            cancelar.addClickListener((evento) -> {
+                nombre.setValue("");
+                email.setValue("");
+                contrasena.setValue("");
+            });
+
+
+            H4 titulo = new H4("Práctica #14 - OCJ");
+            H6 subtitulo = new H6("CRUD de Gerentes");
+
+            HorizontalLayout botones = new HorizontalLayout();
+
+            Button calendario = new Button("Volver al Calendario");
+            calendario.setIcon(new Icon(VaadinIcon.ARROW_CIRCLE_LEFT_O));
+
+            Button salir = new Button("Salir");
+            salir.setIcon(new Icon(VaadinIcon.SIGN_OUT));
+            salir.getElement().setAttribute("theme", "error");
+
+            botones.add(calendario, salir);
+
+            salir.addClickListener((evento) -> {
+                try {
+                    Usuario usuarioaux = usuarioService.listarUsuarios().get(0);
+                    usuarioaux.setEstaLogueado(false);
+                    usuarioService.editarUsuario(usuarioaux);
+                } catch (PersistenceException e) {
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                getUI().get().navigate("");
+            });
+
+            calendario.addClickListener((evento) -> getUI().get().navigate("calendario"));
+
+            HorizontalLayout botoneslayout = new HorizontalLayout(agregar, cancelar);
+            botoneslayout.setSpacing(true);
+
+            nombre.setTitle("Nombre: ");
+            email.setTitle("Email: ");
+            contrasena.setTitle("Contraseña: ");
+
+            tabla.setDataProvider(dataProvider);
+            tabla.addColumn(Usuario::getNombre).setHeader("Nombre");
+            tabla.addColumn(Usuario::getEmail).setHeader("Email");
+
+            tabla.addSelectionListener(event -> {
+                if (event.getFirstSelectedItem().isPresent()) {
+                    abrirPantalla(pantallaAccionesGerente);
+                    pantallaAccionesGerente.eliminar.addClickListener((evento) -> {
+                        Usuario usuario = event.getFirstSelectedItem().get();
+                        usuarioService.eliminarUsuario((int) usuario.getId());
+                        binder.readBean(usuario);
+
+                        dataProvider.refreshAll();
+                    });
+
+                    pantallaAccionesGerente.modificar.addClickListener((evento) -> {
+                        Usuario usuario = event.getFirstSelectedItem().get();
+
+                        nombre.setValue(usuario.getNombre());
+                        email.setValue(usuario.getEmail());
+                        contrasena.setValue(usuario.getContrasena());
+                        editando = true;
+                        usuarioSeleccionadoID = (int) usuario.getId();
+
+                        try {
+                            binder.writeBean(usuario);
+                        } catch (ValidationException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            });
+
+            setAlignItems(Alignment.CENTER);
+            FormLayout form = new FormLayout(nombre, email, contrasena);
+
+            add(titulo, subtitulo, botones, form, botoneslayout, tabla);
 
             nombre.setValue("");
             email.setValue("");
@@ -57,105 +173,10 @@ public class CRUDGerente extends UI {
         }
     }
 
-    private void configurarPagina() {
-        Page.getCurrent().setTitle("Practica #14 - OCJ - CRUD");
+    private void abrirPantalla(VerticalLayout form) {
+        Dialog vistaPantalla = new Dialog();
+        vistaPantalla.add(form);
 
-        agregar.addStyleName(ValoTheme.BUTTON_PRIMARY);
-        agregar.setIcon(FontAwesome.SAVE);
-
-        agregar.addClickListener((evento) -> {
-            try {
-                if(editando){
-                    usuarioService.crearUsuario(usuarioSeleccionadoID, nombre.getValue(), email.getValue(), contrasena.getValue());
-                }
-                else {
-                    usuarioService.crearUsuario(usuarioService.contarUsuario(), nombre.getValue(), email.getValue(), contrasena.getValue());
-                }
-            } catch (Exception exp) {
-                exp.printStackTrace();
-            }
-
-            nombre.setValue("");
-            email.setValue("");
-            contrasena.setValue("");
-            Page.getCurrent().reload();
-        });
-
-        cancelar.addClickListener((evento) -> {
-            nombre.setValue("");
-            email.setValue("");
-            contrasena.setValue("");
-        });
-
-        Label header = new Label("CRUD de Gerentes");
-        header.addStyleName(ValoTheme.LABEL_H1);
-        header.setSizeUndefined();
-
-        HorizontalLayout botoneslayout = new HorizontalLayout(agregar, cancelar);
-        botoneslayout.setSpacing(true);
-
-        nombre.setCaption("Nombre: ");
-        email.setCaption("Email: ");
-        contrasena.setCaption("Contraseña: ");
-
-        List<Usuario> listaDeUsuarios = usuarioService.listarUsuarios();
-
-        tabla = new Grid();
-        tabla.addColumn("Nombre").setHeaderCaption("Nombre");
-        tabla.addColumn("Email").setHeaderCaption("Email");
-
-        for (Usuario usuario : listaDeUsuarios) {
-            tabla.addRow(usuario.getNombre(), usuario.getEmail());
-        }
-        ;
-
-        tabla.addSelectionListener((SelectionEvent.SelectionListener) event -> {
-            if (!event.getSelected().isEmpty()) {
-                abrirPantalla("Elige una opción", pantallaAccionesGerente);
-                pantallaAccionesGerente.eliminar.addClickListener((evento) -> {
-                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
-                    usuarioService.eliminarUsuario(usuarioID);
-                    Page.getCurrent().reload();
-                });
-                pantallaAccionesGerente.modificar.addClickListener((evento) -> {
-                    Integer usuarioID = (Integer) event.getSelected().toArray()[0];
-                    Usuario usuario = usuarioService.buscarUsuario(usuarioID);
-                    nombre.setValue(usuario.getNombre());
-                    email.setValue(usuario.getEmail());
-                    contrasena.setValue(usuario.getContrasena());
-                    editando = true;
-                    usuarioSeleccionadoID = usuarioID;
-                });
-            }
-        });
-
-
-        tabla.setHeight("70%");
-
-        verticalLayout = new VerticalLayout();
-        verticalLayout.setDefaultComponentAlignment(Alignment.TOP_CENTER);
-        verticalLayout.setSpacing(true);
-        setContent(verticalLayout);
-
-        verticalLayout.addComponents(header, nombre, email, contrasena, botoneslayout, tabla);
-    }
-
-    private void abrirPantalla(String title, FormLayout form) {
-        Window vistaPantalla = new Window(title);
-
-        vistaPantalla.center();
-        vistaPantalla.setResizable(false);
-        vistaPantalla.setModal(true);
-        vistaPantalla.setClosable(true);
-        vistaPantalla.setDraggable(false);
-        vistaPantalla.setContent(form);
-
-        addWindow(vistaPantalla);
-    }
-
-    private void configuraBotonPantalla(Button boton, String titulo, FormLayout formulario) {
-        boton.addClickListener((e) -> {
-            abrirPantalla(titulo, formulario);
-        });
+        vistaPantalla.open();
     }
 }
