@@ -46,13 +46,13 @@ public class PantallaEmail extends VerticalLayout {
         add(header, formLayout, botones);
 
         enviar.addClickListener((evento) -> {
-            Email desdeEmail = new Email("cesar18pena@gmail.com");
+            Email desdeEmail = new Email("test@example.com");
             String asuntoEmail = asunto.getValue();
             Email paraEmail = new Email(para.getValue());
             Content cuerpoEmail = new Content("text/plain", cuerpo.getValue());
             Mail email = new Mail(desdeEmail, asuntoEmail, paraEmail, cuerpoEmail);
 
-            String apiKey = "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";
+            String apiKey = "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";
             SendGrid sg = new SendGrid(apiKey);
             Request request = new Request();
 
