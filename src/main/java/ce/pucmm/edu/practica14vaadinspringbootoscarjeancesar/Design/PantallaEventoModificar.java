@@ -18,27 +18,22 @@ import org.vaadin.calendar.CalendarItemTheme;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Date;
 
 @SpringComponent
 @UIScope
-public class PantallaEvento extends VerticalLayout {
+public class PantallaEventoModificar extends VerticalLayout {
     DatePicker fecha = new DatePicker();
     TextField titulo = new TextField("Titulo");
 
-    public PantallaEvento(@Autowired EventoService eventoService) {
+    public PantallaEventoModificar(@Autowired EventoService eventoService) {
         FormLayout formLayout = new FormLayout();
 
-        H3 header = new H3("Agregar Evento");
+        H3 header = new H3("Modificar evento");
 
         fecha.setLabel("Selecciona el dia de inicio");
         fecha.setPlaceholder("Selecciona una fecha");
         fecha.setValue(LocalDate.now());
-
-        Button agregar = new Button("Agregar");
-        agregar.setIcon(new Icon(VaadinIcon.DATABASE));
-        agregar.getElement().setAttribute("theme", "primary");
 
         Button editar = new Button("Editar");
         editar.setIcon(new Icon(VaadinIcon.PENCIL));
@@ -48,8 +43,7 @@ public class PantallaEvento extends VerticalLayout {
         cancelar.setIcon(new Icon(VaadinIcon.CLOSE_CIRCLE_O));
         cancelar.getElement().setAttribute("theme", "error");
 
-        HorizontalLayout botones = new HorizontalLayout(agregar, cancelar);
-
+        HorizontalLayout botones = new HorizontalLayout(editar, cancelar);
         botones.setSpacing(true);
 
         formLayout.add(titulo, fecha);
@@ -57,12 +51,12 @@ public class PantallaEvento extends VerticalLayout {
 
         add(header, formLayout, botones);
 
-        agregar.addClickListener((evento) -> {
+        editar.addClickListener((evento) -> {
             Evento e = new Evento(
-                    (long) eventoService.listarEventos().size() + 1,
+                    (long) eventoService.listarEventos().size(),
                     Date.from(fecha.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     titulo.getValue(),
-                    CalendarItemTheme.Green
+                    CalendarItemTheme.Blue
             );
 
             try {
@@ -73,12 +67,11 @@ public class PantallaEvento extends VerticalLayout {
                         e.getColor()
                 );
 
-                titulo.setValue("");
-                fecha.setValue(LocalDate.now());
             } catch (Exception exp) {
                 exp.printStackTrace();
             }
             Principal.calendario.refresh();
         });
+
     }
 }

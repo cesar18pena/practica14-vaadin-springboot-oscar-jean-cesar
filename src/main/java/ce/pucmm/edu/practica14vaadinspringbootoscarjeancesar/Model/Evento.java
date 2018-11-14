@@ -3,16 +3,15 @@ package ce.pucmm.edu.practica14vaadinspringbootoscarjeancesar.Model;
 import org.vaadin.calendar.CalendarItemTheme;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 public class Evento implements Serializable {
-    @GeneratedValue
+
     @Id
-    private Long id;
+    private long id;
     private Date fecha;
     private String titulo;
     private CalendarItemTheme color;
@@ -20,7 +19,8 @@ public class Evento implements Serializable {
     public Evento() {
     }
 
-    public Evento(Date fecha, String titulo, CalendarItemTheme color) {
+    public Evento(Long id, Date fecha, String titulo, CalendarItemTheme color) {
+        this.id = id;
         this.fecha = fecha;
         this.titulo = titulo;
         this.color = color;

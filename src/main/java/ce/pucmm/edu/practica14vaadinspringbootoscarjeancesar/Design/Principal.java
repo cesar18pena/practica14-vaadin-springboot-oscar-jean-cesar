@@ -41,8 +41,8 @@ public class Principal extends VerticalLayout {
     public Principal(@Autowired final PantallaEvento pantallaEvento,
                      @Autowired UsuarioService usuarioService,
                      @Autowired EventoService eventoService,
-                     @Autowired final PantallaEmail pantallaEmail
-    ) {
+                     @Autowired final PantallaEmail pantallaEmail,
+                     @Autowired PantallaEventoModificar pantallaEventoModificar) {
         Principal.eventoService = eventoService;
 
         if (usuarioService.listarUsuarios().isEmpty()) {
@@ -100,13 +100,23 @@ public class Principal extends VerticalLayout {
             CRUD.addClickListener((evento) -> getUI().get().navigate("gerentes"));
 
             eventoService.crearEvento(
+                    1,
                     Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant()),
                     "Entrega practica 14",
                     CalendarItemTheme.Green
             );
 
             calendario.setDataProvider(new CustomDataProvider());
-            calendario.addEventClickListener(evt -> Notification.show(evt.getDetail().getTitulo()));
+            calendario.addEventClickListener(evt -> {
+                try {
+                    pantallaEventoModificar.fecha.setValue(evt.getDetail().getFecha().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                    pantallaEventoModificar.titulo.setValue(evt.getDetail().getTitulo());
+                    abrirPantalla(pantallaEventoModificar);
+                    eventoService.crearEvento(evt.getDetail().getId(), evt.getDetail().getFecha(), evt.getDetail().getTitulo(), evt.getDetail().getColor());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
 
             H4 titulo = new H4("Práctica #14 - OCJ");
             H6 subtitulo = new H6("Calendario");
